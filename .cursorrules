@@ -1,0 +1,96 @@
+# Cursor Rules for Fast Farms - Equipment Sales Website
+
+## Tech Stack
+- HTML, CSS, and JavaScript
+- Node.js (local server and npm scripts)
+- Cursor IDE with Claude Code integration
+- Supabase (future use for database and image storage)
+- Github (for revision control and transfer to Vercel)
+- Vercel (for hosting and deployment)
+
+**Rules:**
+- Do not suggest migrating to React, Next.js, or TypeScript unless explicitly requested.
+- Use native JavaScript modules and clean file structure for now.
+
+---
+
+## Code Style and Structure
+
+### Code Conventions
+- Use **clear and descriptive variable names** (`tractorList`, not `data1`).
+- Keep **functions short and single-purpose**.
+- Comment any function that handles data or modifies state.
+- Keep indentation consistent (2 spaces).
+
+### HTML
+- Keep it semantic and minimal: use `<section>`, `<article>`, `<header>`, `<footer>` properly.
+- Close all tags, even if optional.
+- Comments like `<!-- Hero Section -->` should mark logical groups.
+
+### CSS
+- Use class names that describe purpose (`.hero-banner`, `.tag-container`, `.contact-btn`).
+- Group related rules together.
+- Keep all color values in **variables at the top of the file**.
+
+### JavaScript
+- Use modern syntax (ES6+): `const`, `let`, arrow functions.
+- Keep DOM manipulation modular (avoid inline JS in HTML).
+- Always handle errors with `try...catch` when fetching data.
+
+### General Practices
+- When in doubt, prefer **readability** over cleverness.
+- Consistency is more important than perfection.
+
+---
+
+## UI and Design Guidelines
+
+### General UI Style
+- Keep the design **clean, warm, and trustworthy**, similar to an equipment dealer's showroom site.
+- Use **natural greens, off-whites, and muted browns** — think "Oregon farm in spring."
+- Avoid heavy shadows, neon colors, or complex animations.
+
+### Typography
+- Headings: bold, large, sans-serif (like Montserrat or Open Sans).
+- Body text: easy-to-read serif or neutral sans-serif (like Roboto or Lato).
+- Maintain consistent text sizing across pages.
+
+### Layout
+- Navigation bar at the top: "Home", "All Equipment", "Tractors", "Trucks", "Implements", "Contact".
+- Keep spacing generous and grid-based — nothing cramped.
+- Equipment cards should always show: **image, title, category, price, short description, contact button.**
+
+### Images
+- When placeholder images are needed, use realistic farm-related stock photos or Unsplash URLs.
+- Avoid AI-generated images unless clearly labeled as mockups.
+
+---
+
+## Communication Style
+
+Please ask any and all questions you have about the implementation I have asked you to do in order to provide the most robust solution and handle potential edge cases. Gather any additional context you might need to feel confident before proceeding with the implementation.
+
+When you do ask clarifying questions, please do not use bullet points — instead, use **letters (a, b, c)** within each numbered question if the number requires sub-points.
+
+---
+
+## Current Project Goals
+
+### Current Objective
+Create a working local prototype of a **Farm Equipment Sales website** that lists items by category and allows users to view and contact sellers.
+
+### Deployment Roadmap (TLDR)
+1. **GitHub** - Connect the project to a GitHub repository (version control)
+2. **Supabase** - Set up database for dynamic equipment listings
+3. **Vercel** - Deploy the live site (after everything is working)
+
+### Active Focus
+1. Connect to GitHub for version control
+2. Prepare database connection (Supabase) for item listings
+3. Add real placeholder images for items
+
+### Future Goals
+- Add a search and filter function
+- Deploy the project publicly using Vercel
+
+

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Farms - Equipment Sales</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <div class="logo">FastFarms</div>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Equipment</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Quality Equipment Sales</h1>
+        </div>
+    </header>
+
+    <!-- Category Tags -->
+    <nav class="category-tags">
+        <button class="tag active" data-category="all">All</button>
+        <button class="tag" data-category="tractor">Tractor</button>
+        <button class="tag" data-category="truck">Truck</button>
+        <button class="tag" data-category="implement">Implement</button>
+        <button class="tag" data-category="pickup">Pickup</button>
+    </nav>
+
+    <!-- Equipment Listing -->
+    <main class="container">
+        <!-- Tractor Entry -->
+        <section class="listing" data-category="tractor">
+            <!-- Image Gallery -->
+            <div class="gallery">
+                <div class="main-image">
+                    <img id="mainImg1" src="" alt="Main equipment photo">
+                </div>
+                <div class="thumbnail-container">
+                    <img class="thumbnail active" src="" alt="Photo 1" onclick="changeImage(this, 'mainImg1')">
+                    <img class="thumbnail" src="" alt="Photo 2" onclick="changeImage(this, 'mainImg1')">
+                    <img class="thumbnail" src="" alt="Photo 3" onclick="changeImage(this, 'mainImg1')">
+                    <img class="thumbnail" src="" alt="Photo 4" onclick="changeImage(this, 'mainImg1')">
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="details">
+                <h2>John Deere 5075E Utility Tractor</h2>
+                <span class="equipment-tag">Tractor</span>
+                <div class="description">
+                    <p><strong>Year:</strong> 2018</p>
+                    <p><strong>Hours:</strong> 850</p>
+                    <p><strong>Condition:</strong> Excellent</p>
+                    <p><strong>Price:</strong> $35,000</p>
+
+                    <h3>Description</h3>
+                    <p>Well-maintained utility tractor perfect for farm work. This John Deere 5075E features 75 horsepower, 4WD capability, and has been serviced regularly. Includes front loader attachment.</p>
+
+                    <h3>Features</h3>
+                    <ul>
+                        <li>75 HP diesel engine</li>
+                        <li>4-wheel drive</li>
+                        <li>Front loader included</li>
+                        <li>Climate-controlled cab</li>
+                        <li>Only 850 hours of use</li>
+                        <li>Recent maintenance and inspection</li>
+                    </ul>
+
+                    <a href="contact.html" class="contact-btn">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Truck Entry -->
+        <section class="listing" data-category="truck">
+            <div class="gallery">
+                <div class="main-image">
+                    <img id="mainImg2" src="" alt="Main equipment photo">
+                </div>
+                <div class="thumbnail-container">
+                    <img class="thumbnail active" src="" alt="Photo 1" onclick="changeImage(this, 'mainImg2')">
+                    <img class="thumbnail" src="" alt="Photo 2" onclick="changeImage(this, 'mainImg2')">
+                    <img class="thumbnail" src="" alt="Photo 3" onclick="changeImage(this, 'mainImg2')">
+                    <img class="thumbnail" src="" alt="Photo 4" onclick="changeImage(this, 'mainImg2')">
+                </div>
+            </div>
+
+            <div class="details">
+                <h2>Ford F-650 Super Duty Dump Truck</h2>
+                <span class="equipment-tag">Truck</span>
+                <div class="description">
+                    <p><strong>Year:</strong> 2020</p>
+                    <p><strong>Miles:</strong> 45,000</p>
+                    <p><strong>Condition:</strong> Very Good</p>
+                    <p><strong>Price:</strong> $68,500</p>
+
+                    <h3>Description</h3>
+                    <p>Heavy-duty dump truck ideal for construction and hauling. Features a powerful diesel engine and hydraulic dump bed. Well-maintained with full service history.</p>
+
+                    <h3>Features</h3>
+                    <ul>
+                        <li>6.7L Power Stroke diesel engine</li>
+                        <li>Automatic transmission</li>
+                        <li>12-foot hydraulic dump bed</li>
+                        <li>Air conditioning</li>
+                        <li>Regular maintenance completed</li>
+                        <li>Clean title</li>
+                    </ul>
+
+                    <a href="contact.html" class="contact-btn">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Implement Entry -->
+        <section class="listing" data-category="implement">
+            <div class="gallery">
+                <div class="main-image">
+                    <img id="mainImg3" src="" alt="Main equipment photo">
+                </div>
+                <div class="thumbnail-container">
+                    <img class="thumbnail active" src="" alt="Photo 1" onclick="changeImage(this, 'mainImg3')">
+                    <img class="thumbnail" src="" alt="Photo 2" onclick="changeImage(this, 'mainImg3')">
+                    <img class="thumbnail" src="" alt="Photo 3" onclick="changeImage(this, 'mainImg3')">
+                    <img class="thumbnail" src="" alt="Photo 4" onclick="changeImage(this, 'mainImg3')">
+                </div>
+            </div>
+
+            <div class="details">
+                <h2>Bush Hog 2615L Rotary Cutter</h2>
+                <span class="equipment-tag">Implement</span>
+                <div class="description">
+                    <p><strong>Year:</strong> 2019</p>
+                    <p><strong>Width:</strong> 15 feet</p>
+                    <p><strong>Condition:</strong> Good</p>
+                    <p><strong>Price:</strong> $12,800</p>
+
+                    <h3>Description</h3>
+                    <p>Heavy-duty rotary cutter perfect for pasture maintenance and brush clearing. Features reinforced blades and adjustable cutting height. Compatible with most tractors.</p>
+
+                    <h3>Features</h3>
+                    <ul>
+                        <li>15-foot cutting width</li>
+                        <li>Heavy-duty gearbox</li>
+                        <li>Slip clutch protection</li>
+                        <li>Adjustable cutting height</li>
+                        <li>Three-point hitch compatible</li>
+                        <li>Reinforced blade system</li>
+                    </ul>
+
+                    <a href="contact.html" class="contact-btn">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pickup Entry -->
+        <section class="listing" data-category="pickup">
+            <div class="gallery">
+                <div class="main-image">
+                    <img id="mainImg4" src="" alt="Main equipment photo">
+                </div>
+                <div class="thumbnail-container">
+                    <img class="thumbnail active" src="" alt="Photo 1" onclick="changeImage(this, 'mainImg4')">
+                    <img class="thumbnail" src="" alt="Photo 2" onclick="changeImage(this, 'mainImg4')">
+                    <img class="thumbnail" src="" alt="Photo 3" onclick="changeImage(this, 'mainImg4')">
+                    <img class="thumbnail" src="" alt="Photo 4" onclick="changeImage(this, 'mainImg4')">
+                </div>
+            </div>
+
+            <div class="details">
+                <h2>Chevrolet Silverado 2500HD Crew Cab</h2>
+                <span class="equipment-tag">Pickup</span>
+                <div class="description">
+                    <p><strong>Year:</strong> 2021</p>
+                    <p><strong>Miles:</strong> 32,000</p>
+                    <p><strong>Condition:</strong> Excellent</p>
+                    <p><strong>Price:</strong> $52,900</p>
+
+                    <h3>Description</h3>
+                    <p>Heavy-duty pickup truck perfect for towing and hauling. Features crew cab seating, long bed, and towing package. One owner with complete service records.</p>
+
+                    <h3>Features</h3>
+                    <ul>
+                        <li>6.6L Duramax diesel engine</li>
+                        <li>Allison automatic transmission</li>
+                        <li>4WD with locking differential</li>
+                        <li>Crew cab with leather interior</li>
+                        <li>8-foot long bed</li>
+                        <li>Towing package (20,000 lb capacity)</li>
+                    </ul>
+
+                    <a href="contact.html" class="contact-btn">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

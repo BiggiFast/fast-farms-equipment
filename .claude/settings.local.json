@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(touch:*)",
+      "Bash(mkdir:*)",
+      "Bash(node server.js)",
+      "Bash(npm i:*)",
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:studioinspo.com)",
+      "Read(//Users/coryfast/Documents/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
