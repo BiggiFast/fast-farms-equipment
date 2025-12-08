@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Equipment Sales</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* Override logo and nav to match main site serif style */
+    .logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 400;
+      letter-spacing: 0.15em;
+    }
+    .logo a {
+      color: #000;
+      text-decoration: none;
+    }
+    .logo a:hover {
+      opacity: 0.7;
+    }
+    .nav-links a {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-size: 0.9rem;
+    }
+    /* Hero heading with serif font */
+    .hero-content h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+    }
+    /* Contact headings with serif font */
+    .contact-info h2,
+    .contact-details h3 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 400;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Header - Equipment section (includes Doug link) -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="logo"><a href="/">CORY</a></div>
+      <ul class="nav-links">
+        <li><a href="/about.html">About</a></li>
+        <li><a href="/doug.html">Doug</a></li>
+        <li><a href="/equipment/">Equipment</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-content">
+      <h1>Get in Touch</h1>
+    </div>
+  </header>
+
+  <!-- Contact Form Section -->
+  <main class="container">
+    <section class="contact-section">
+      <div class="contact-info">
+        <h2>Interested in Our Equipment?</h2>
+        <p>We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.</p>
+
+        <div class="contact-details">
+          <h3>Contact Information</h3>
+          <p><strong>Email:</strong> contact@mrcoryfast.com</p>
+          <p><!-- Add phone number if desired --></p>
+        </div>
+      </div>
+
+      <div class="contact-form-container">
+        <form class="contact-form">
+          <div class="form-group">
+            <label for="name">Name *</label>
+            <input type="text" id="name" name="name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" name="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" name="phone">
+          </div>
+
+          <div class="form-group">
+            <label for="equipment">Equipment of Interest</label>
+            <input type="text" id="equipment" name="equipment" placeholder="Which equipment are you interested in?">
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message *</label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Send Message</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+

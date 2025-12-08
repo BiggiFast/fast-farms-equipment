@@ -6,9 +6,11 @@ A clean, modern website for listing and selling farm equipment including tractor
 
 - **Frontend**: HTML, CSS, Vanilla JavaScript
 - **Backend**: Node.js with Express
+- **Database**: Supabase (connected & secured ✅)
+- **Authentication**: Supabase Auth (email/password)
+- **Storage**: Supabase Storage (equipment images)
 - **Development**: Nodemon, Browser-sync, Concurrently
-- **Database**: Supabase (planned)
-- **Hosting**: Vercel (planned)
+- **Hosting**: Vercel (ready to deploy)
 
 ## Project Structure
 
@@ -37,20 +39,36 @@ A clean, modern website for listing and selling farm equipment including tractor
 npm run dev
 ```
 This runs both the Node server and Browser-sync for automatic reloading.
+- **Public Site**: http://localhost:3001
+- **Admin Panel**: http://localhost:3001/equipment/admin.html
 - Server: http://localhost:3000
-- Browser-sync: http://localhost:3001
+- Browser-sync UI: http://localhost:3002
 
 **Individual commands:**
 - `npm start` - Start production server only
 - `npm run watch` - Start server with nodemon (auto-restart on changes)
 - `npm run bs` - Start browser-sync only
 
+**Admin Access:**
+- Login with your Supabase user credentials
+- See `ADMIN_SETUP.md` for setup instructions
+- See `SECURITY_SETUP_GUIDE.md` for security details
+
 ## Features
 
+### Public Site
 - **Category Filtering**: Filter equipment by type (All, Tractor, Truck, Implement, Pickup)
 - **Image Gallery**: Click thumbnails to change main image
 - **Responsive Design**: Works on mobile, tablet, and desktop
 - **Contact Forms**: Allow users to reach out about equipment
+
+### Admin Dashboard
+- **Secure Authentication**: Supabase Auth with email/password
+- **Equipment Management**: Add, edit, delete, and toggle active/inactive
+- **Multi-Photo Uploads**: Up to 5 photos per listing with auto-resize
+- **Main Photo Selection**: Choose which photo displays as primary
+- **Soft Deletes**: Items can be restored from database if needed
+- **Real-time Updates**: Changes reflect immediately
 
 ## Current Status
 
@@ -61,11 +79,17 @@ This runs both the Node server and Browser-sync for automatic reloading.
 - ✅ Image gallery functionality
 - ✅ Contact and About pages
 - ✅ Responsive design
+- ✅ **Supabase integration complete**
+- ✅ **Admin dashboard with authentication**
+- ✅ **Row Level Security (RLS) enabled**
+- ✅ **Secure image uploads (authenticated only)**
+- ✅ **Multi-photo support (up to 5 per listing)**
 
 ### Next Steps:
-1. Add real equipment photos
-2. Connect to Supabase for dynamic listings
-3. Deploy to Vercel
+1. Move Supabase credentials to environment variables
+2. Add equipment listings via admin panel
+3. Connect public site to load equipment from Supabase
+4. Deploy to Vercel
 
 ## Data Structure (Supabase Ready)
 
@@ -108,6 +132,8 @@ Equipment items follow this structure:
 ## License
 
 ISC
+
+
 
 
 

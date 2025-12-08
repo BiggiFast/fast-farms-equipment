@@ -76,25 +76,35 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 
-// Future: Function to fetch equipment items from Supabase
+// TODO: Function to fetch equipment items from Supabase
+// When implementing, make sure to ONLY fetch items where is_active = true
+// Example:
+// import { supabase } from './supabaseClient.js';
+//
 // async function loadEquipmentFromSupabase() {
 //   try {
-//     const response = await fetch('YOUR_SUPABASE_API_URL');
-//     const items = await response.json();
-//     renderEquipmentListings(items);
+//     const { data, error } = await supabase
+//       .from('equipment')
+//       .select('*')
+//       .eq('is_active', true)  // IMPORTANT: Only show active items on public site
+//       .order('created_at', { ascending: false });
+//
+//     if (error) throw error;
+//     renderEquipmentListings(data);
 //   } catch (error) {
 //     console.error('Error loading equipment:', error);
 //   }
 // }
 
-// Future: Function to render equipment listings dynamically
+// TODO: Function to render equipment listings dynamically
 // function renderEquipmentListings(items) {
 //   const container = document.querySelector('.container');
 //   container.innerHTML = ''; // Clear existing listings
 //   
 //   items.forEach(item => {
 //     // Create listing HTML dynamically using the item data
-//     // This will be implemented when connecting to Supabase
+//     // Only items with is_active = true will be passed here
+//     // Use item.name, item.description, item.category, item.price, item.image_url
 //   });
 // }
 

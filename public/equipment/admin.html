@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Equipment Sales</title>
+  <link rel="stylesheet" href="../styles.css">
+  <style>
+    /* Admin-specific styles */
+    .admin-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .admin-header h1 {
+      margin: 0;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      background-color: #4a7c59;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background-color: #3a6649;
+    }
+
+    .btn-secondary {
+      background-color: #6c757d;
+      margin-left: 5px;
+    }
+
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+
+    .equipment-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .equipment-table th,
+    .equipment-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .equipment-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+
+    .equipment-table tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .equipment-table .photo-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .equipment-table .no-photo {
+      width: 50px;
+      height: 50px;
+      background: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: #adb5bd;
+      font-size: 12px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+    }
+
+    .close-btn {
+      font-size: 28px;
+      font-weight: bold;
+      color: #aaa;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .close-btn:hover {
+      color: #000;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-group input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 30px;
+    }
+
+    .auth-gate {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .auth-gate h2 {
+      margin-top: 0;
+    }
+
+    .auth-gate input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .error-message {
+      color: #d32f2f;
+      margin-top: 10px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-active {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .status-inactive {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Photo upload styles */
+    .photo-upload-container {
+      margin-bottom: 15px;
+    }
+
+    .photo-preview-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .photo-preview-item {
+      position: relative;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #f8f9fa;
+    }
+
+    .photo-preview-item.main-photo {
+      border-color: #4a7c59;
+      border-width: 3px;
+    }
+
+    .photo-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-preview-controls {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .photo-preview-controls button {
+      background: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+
+    .photo-preview-controls button:hover {
+      background: #f0f0f0;
+    }
+
+    .main-badge {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: #4a7c59;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .photo-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <!-- Authentication Gate -->
+  <div id="authGate" class="auth-gate">
+    <h2>Admin Login</h2>
+    <p>Sign in with your admin account:</p>
+    <input type="email" id="emailInput" placeholder="Email" autocomplete="email">
+    <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password">
+    <button class="btn" onclick="signIn()">Sign In</button>
+    <div id="authError" class="error-message hidden"></div>
+    <div id="authSuccess" class="success-message hidden" style="color: #155724; margin-top: 10px;"></div>
+  </div>
+
+  <!-- Admin Dashboard (hidden until authenticated) -->
+  <div id="adminDashboard" class="hidden">
+    <div class="admin-container">
+      <div class="admin-header">
+        <h1>Equipment Admin</h1>
+        <div>
+          <button class="btn" onclick="openNewListingForm()">+ New Listing</button>
+          <button class="btn btn-secondary" onclick="signOut()">Sign Out</button>
+        </div>
+      </div>
+
+      <div id="loadingMessage" class="loading">Loading equipment...</div>
+
+      <table id="equipmentTable" class="equipment-table hidden">
+        <thead>
+          <tr>
+            <th>Active</th>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="equipmentTableBody">
+          <!-- Equipment rows will be inserted here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit/New Listing Modal -->
+  <div id="listingModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Edit Listing</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="listingForm">
+        <input type="hidden" id="listingId">
+
+        <div class="form-group">
+          <label for="listingName">Name *</label>
+          <input type="text" id="listingName" required>
+        </div>
+
+        <div class="form-group">
+          <label for="listingDescription">Description</label>
+          <textarea id="listingDescription"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="listingCategory">Category *</label>
+          <input type="text" id="listingCategory" required placeholder="e.g. tractor, truck, implement">
+        </div>
+
+        <div class="form-group">
+          <label for="listingPrice">Price ($) *</label>
+          <input type="number" id="listingPrice" step="0.01" required>
+        </div>
+
+        <div class="form-group">
+          <label for="listingImageUrl">Image URL (Legacy - optional)</label>
+          <input type="text" id="listingImageUrl" placeholder="Paste Supabase image URL here">
+          <small style="color: #666;">For backward compatibility. Use photo upload below instead.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Photos (Max 5, up to 5MB each)</label>
+          <div class="photo-upload-container">
+            <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+            <button type="button" class="btn" onclick="document.getElementById('photoInput').click()">
+              Browse Files
+            </button>
+            <span id="photoUploadStatus" style="margin-left: 10px; color: #666;"></span>
+          </div>
+          <div id="photoPreviewContainer" class="photo-preview-container">
+            <!-- Photo previews will be inserted here -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="listingIsActive">
+            Active (visible on public site)
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="../admin.js"></script>
+</body>
+</html>
+
+
