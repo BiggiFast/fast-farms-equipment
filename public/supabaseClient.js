@@ -1,6 +1,6 @@
 // Supabase client module for browser-based app
-// Import Supabase from CDN
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Import Supabase from CDN (using specific stable version)
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/+esm';
 
 // Supabase credentials
 const SUPABASE_URL = 'https://tpsajkkwrsbaoyoiexee.supabase.co';

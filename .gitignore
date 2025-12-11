@@ -22,8 +22,11 @@ npm-debug.log*
 
 # Screenshots and images used for documentation
 screenshots/
+
+# Ignore PNG files except in public/images (site assets)
 *.PNG
 *.png
+!public/images/*.png
 
 # Editor directories
 .vscode/

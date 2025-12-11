@@ -1,473 +1,561 @@
+/* Equipment Page Styles - MrCoryFast.com */
+/* Font System: EB Garamond (display), Bebas Neue (headings), Montserrat (body/nav) */
+
+/* ============================================
+   CSS VARIABLES - Shared with main-styles.css
+   ============================================ */
+:root {
+  /* Primary Colors */
+  --color-text: #1a1a1a;
+  --color-text-light: #4a4a4a;
+  --color-text-muted: #6b6b6b;
+  
+  /* Background Colors */
+  --color-bg: #fefefe;
+  --color-bg-warm: #faf8f5;
+  --color-bg-card: #ffffff;
+  
+  /* Accent Colors - drawn from the golden hour photo */
+  --color-gold: #c9a227;
+  --color-gold-light: #e8d59a;
+  --color-earth: #5c4a32;
+  --color-sage: #7a8b6e;
+  
+  /* Borders */
+  --color-border: #e8e8e8;
+  --color-border-dark: #d0d0d0;
+  
+  /* Spacing */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 60px;
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    color: #000;
-    background-color: #fff;
-    line-height: 1.6;
+  font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  line-height: 1.7;
 }
 
-/* Navigation Header */
+/* ============================================
+   NAVIGATION HEADER
+   ============================================ */
 .main-nav {
-    background-color: #fff;
-    border-bottom: 1px solid #e5e5e5;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
+  background-color: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .logo {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #000;
-    letter-spacing: 0;
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+.logo a {
+  color: var(--color-text);
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.logo a:hover {
+  opacity: 0.7;
 }
 
 .nav-links {
-    display: flex;
-    list-style: none;
-    gap: 40px;
+  display: flex;
+  list-style: none;
+  gap: var(--space-md);
 }
 
 .nav-links a {
-    color: #000;
-    text-decoration: none;
-    font-size: 1rem;
-    padding: 0;
-    transition: opacity 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-decoration: none;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .nav-links a:hover {
-    opacity: 0.6;
+  border-bottom-color: var(--color-text);
 }
 
 .nav-links a.active {
-    font-weight: 500;
+  border-bottom-color: var(--color-text);
 }
 
-/* Hero Section */
+/* ============================================
+   PAGE HEADER / HERO
+   ============================================ */
 .hero {
-    background-color: #fff;
-    padding: 60px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
+  background-color: var(--color-bg-warm);
+  padding: var(--space-xl) var(--space-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .hero-content h1 {
-    color: #000;
-    font-size: 3rem;
-    font-weight: 700;
-    letter-spacing: -1px;
-    margin-bottom: 20px;
+  font-family: 'Bebas Neue', 'Arial Black', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--color-text);
 }
 
-/* Category Tags */
+/* ============================================
+   CATEGORY FILTER TAGS
+   ============================================ */
 .category-tags {
-    background-color: #fff;
-    padding: 20px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
-    border-bottom: 1px solid #e5e5e5;
+  background-color: var(--color-bg);
+  padding: var(--space-md) var(--space-lg);
+  max-width: 1400px;
+  margin: 0 auto;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
 }
 
 .tag {
-    display: inline-block;
-    margin: 0 8px 8px 0;
-    padding: 8px 20px;
-    background-color: #fff;
-    color: #000;
-    border: 1px solid #000;
-    border-radius: 20px;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-weight: 400;
+  display: inline-block;
+  margin: 0 var(--space-xs) var(--space-xs) 0;
+  padding: 10px 24px;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-text);
+  border-radius: 24px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .tag:hover {
-    background-color: #000;
-    color: #fff;
+  background-color: var(--color-text);
+  color: var(--color-bg);
 }
 
 .tag.active {
-    background-color: #000;
-    color: #fff;
+  background-color: var(--color-text);
+  color: var(--color-bg);
 }
 
-/* Main Container */
+/* ============================================
+   MAIN CONTAINER
+   ============================================ */
 .container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--space-lg);
 }
 
-/* Listing Section */
+/* ============================================
+   EQUIPMENT LISTING CARD
+   ============================================ */
 .listing {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 60px;
-    background-color: #fff;
-    padding: 0;
-    margin-bottom: 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  background-color: var(--color-bg-card);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-xl);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 /* Gallery */
 .gallery {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .main-image {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    overflow: hidden;
-    border-radius: 4px;
-    background-color: #f5f5f5;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: var(--color-bg-warm);
 }
 
 .main-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .thumbnail-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
 }
 
 .thumbnail {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    cursor: pointer;
-    border-radius: 4px;
-    border: 2px solid transparent;
-    transition: border-color 0.2s ease, opacity 0.2s ease;
-    background-color: #f5f5f5;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+  background-color: var(--color-bg-warm);
 }
 
 .thumbnail:hover {
-    opacity: 0.7;
+  opacity: 0.8;
 }
 
 .thumbnail.active {
-    border-color: #000;
+  border-color: var(--color-gold);
 }
 
 /* Product Details */
 .details {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-sm) 0;
 }
 
 .details h2 {
-    color: #000;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 20px;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
+  line-height: 1.2;
 }
 
 .equipment-tag {
-    display: inline-block;
-    padding: 6px 16px;
-    background-color: #fff;
-    color: #000;
-    font-size: 0.85rem;
-    border: 1px solid #000;
-    border-radius: 20px;
-    margin-bottom: 20px;
-    align-self: flex-start;
+  display: inline-block;
+  padding: 6px 16px;
+  background-color: var(--color-bg-warm);
+  color: var(--color-earth);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: 20px;
+  margin-bottom: var(--space-md);
+  align-self: flex-start;
+}
+
+.price {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: var(--color-earth);
+  margin-bottom: var(--space-md);
 }
 
 .description p {
-    margin-bottom: 12px;
-    line-height: 1.7;
-    color: #000;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--color-text-light);
+  margin-bottom: 12px;
 }
 
 .description h3 {
-    color: #000;
-    margin-top: 30px;
-    margin-bottom: 16px;
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.3px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .description ul {
-    margin-left: 0;
-    line-height: 1.9;
-    list-style: none;
-    padding-left: 0;
+  margin-left: 0;
+  line-height: 1.9;
+  list-style: none;
+  padding-left: 0;
 }
 
 .description ul li {
-    margin-bottom: 10px;
-    padding-left: 20px;
-    position: relative;
+  font-size: 0.95rem;
+  color: var(--color-text-light);
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
 }
 
 .description ul li:before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    color: #000;
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--color-gold);
 }
 
+/* Contact Button */
 .contact-btn {
-    margin-top: 30px;
-    padding: 14px 32px;
-    background-color: #000;
-    color: #fff;
-    border: 1px solid #000;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    align-self: flex-start;
-    text-decoration: none;
-    display: inline-block;
+  margin-top: var(--space-md);
+  padding: 14px 32px;
+  background-color: var(--color-earth);
+  color: #fff;
+  border: 2px solid var(--color-earth);
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .contact-btn:hover {
-    background-color: #fff;
-    color: #000;
+  background-color: transparent;
+  color: var(--color-earth);
 }
 
-/* Contact Page */
+/* ============================================
+   CONTACT PAGE
+   ============================================ */
 .contact-section {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
-    background-color: #fff;
-    padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-xl);
+  background-color: var(--color-bg-card);
+  padding: var(--space-lg);
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .contact-info h2 {
-    color: #000;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    letter-spacing: -0.5px;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+  color: var(--color-text);
 }
 
 .contact-info p {
-    line-height: 1.8;
-    margin-bottom: 16px;
-    color: #000;
+  font-size: 0.95rem;
+  line-height: 1.8;
+  margin-bottom: var(--space-sm);
+  color: var(--color-text-light);
 }
 
 .contact-details {
-    margin-top: 40px;
-    padding: 30px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border: 1px solid #e5e5e5;
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background-color: var(--color-bg-warm);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
 }
 
 .contact-details h3 {
-    color: #000;
-    margin-bottom: 20px;
-    font-size: 1.5rem;
-    font-weight: 600;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-sm);
+  color: var(--color-text);
 }
 
 .contact-details p {
-    margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .contact-form-container {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .contact-form {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group label {
-    font-weight: 500;
-    margin-bottom: 10px;
-    color: #000;
-    font-size: 0.95rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: var(--color-text);
 }
 
 .form-group input,
 .form-group textarea {
-    padding: 14px;
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-    transition: border-color 0.2s ease;
-    background-color: #fff;
+  padding: 14px;
+  border: 1px solid var(--color-border-dark);
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s ease;
+  background-color: var(--color-bg);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-    outline: none;
-    border-color: #000;
+  outline: none;
+  border-color: var(--color-earth);
 }
 
 .submit-btn {
-    padding: 14px 32px;
-    background-color: #000;
-    color: #fff;
-    border: 1px solid #000;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    align-self: flex-start;
+  padding: 14px 32px;
+  background-color: var(--color-earth);
+  color: #fff;
+  border: 2px solid var(--color-earth);
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-start;
 }
 
 .submit-btn:hover {
-    background-color: #fff;
-    color: #000;
+  background-color: transparent;
+  color: var(--color-earth);
 }
 
-/* About Section */
-.about-section {
-    max-width: 1400px;
-    margin: 80px auto;
-    padding: 0 40px;
-}
-
-.about-content {
-    max-width: 800px;
-}
-
-.about-content h2 {
-    color: #000;
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 24px;
-    letter-spacing: -0.5px;
-}
-
-.about-content p {
-    line-height: 1.8;
-    margin-bottom: 16px;
-    color: #000;
-    font-size: 1.05rem;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .nav-container {
-        padding: 16px 20px;
-    }
-
-    .logo {
-        font-size: 1.1rem;
-    }
-
-    .nav-links {
-        gap: 20px;
-    }
-
-    .nav-links a {
-        font-size: 0.9rem;
-    }
-
-    .hero {
-        padding: 40px 20px;
-    }
-
-    .hero-content h1 {
-        font-size: 2rem;
-    }
-
-    .container {
-        padding: 20px;
-    }
-
-    .listing {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-
-    .contact-section {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-
-    .category-tags {
-        padding: 16px 20px;
-    }
-
-    .tag {
-        margin: 0 6px 6px 0;
-        padding: 6px 16px;
-        font-size: 0.85rem;
-    }
-
-    .thumbnail-container {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
-    }
-
-    .details h2 {
-        font-size: 1.8rem;
-    }
-
-    .about-section {
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-
-    .about-content h2 {
-        font-size: 1.8rem;
-    }
-}
-
-/* Loading and error messages */
+/* ============================================
+   LOADING & ERROR STATES
+   ============================================ */
 .loading-message,
 .no-equipment,
 .error-message {
   text-align: center;
-  padding: 60px 20px;
-  font-size: 1.2rem;
-  color: #666;
-  background: white;
+  padding: var(--space-xl) var(--space-md);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  color: var(--color-text-muted);
+  background: var(--color-bg-card);
   border-radius: 8px;
-  margin: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: var(--space-md);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #c62828;
   background: #ffebee;
 }
 
 .no-equipment {
-  color: #555;
+  color: var(--color-text-light);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  .nav-container {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .logo {
+    font-size: 1.4rem;
+  }
+
+  .nav-links {
+    gap: var(--space-sm);
+  }
+
+  .nav-links a {
+    font-size: 0.7rem;
+  }
+
+  .hero {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+
+  .container {
+    padding: var(--space-md);
+  }
+
+  .listing {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-md);
+  }
+
+  .contact-section {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding: var(--space-md);
+  }
+
+  .category-tags {
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .tag {
+    margin: 0 6px 6px 0;
+    padding: 8px 18px;
+    font-size: 0.7rem;
+  }
+
+  .thumbnail-container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .details h2 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links {
+    gap: var(--space-xs);
+  }
+
+  .thumbnail-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }

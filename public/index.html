@@ -3,14 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CORY - MrCoryFast</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>CORY FAST</title>
+  
+  <!-- Fonts: EB Garamond (display), Bebas Neue (headings), Montserrat (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=EB+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="main-styles.css">
 </head>
 <body>
-  <!-- Header -->
+  <!-- Header - Overlaid on hero, larger logo on main page -->
   <header class="site-header">
-    <a href="/" class="site-logo">CORY</a>
+    <a href="/" class="site-logo site-logo-large">CORY</a>
     <nav class="site-nav">
       <a href="/" class="active">HOME</a>
       <a href="/about.html">ABOUT</a>
@@ -18,12 +23,11 @@
     </nav>
   </header>
 
-  <!-- Main Content -->
-  <main class="site-main">
-    <div class="landing-content">
-      <!-- Intentionally minimal - matching your current Squarespace aesthetic -->
-    </div>
-  </main>
+  <!-- Hero Section -->
+  <section class="hero">
+    <img src="/images/hero-railroad.png" alt="Oregon farmland at golden hour" class="hero-image">
+    <div class="hero-overlay"></div>
+  </section>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -40,4 +44,3 @@
   </footer>
 </body>
 </html>
-
