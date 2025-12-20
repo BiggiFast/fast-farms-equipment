@@ -11,6 +11,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=EB+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="../styles.css">
+  <style>
+    .coming-soon {
+      background-color: var(--color-bg-warm);
+      border-radius: 8px;
+      padding: 60px 40px;
+      text-align: center;
+    }
+    
+    .coming-soon h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+      margin-bottom: 10px;
+    }
+    
+    .coming-soon p {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+    
+    .phone-number {
+      font-family: 'EB Garamond', Georgia, serif;
+      font-size: 1.8rem;
+      color: var(--color-earth);
+      text-decoration: none;
+      display: block;
+      margin-top: 15px;
+    }
+    
+    .phone-number:hover {
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
   <!-- Navigation Header - Equipment section (includes Doug link) -->
@@ -32,49 +66,25 @@
     </div>
   </header>
 
-  <!-- Contact Form Section -->
+  <!-- Contact Section -->
   <main class="container">
     <section class="contact-section">
       <div class="contact-info">
         <h2>Interested in Our Equipment?</h2>
-        <p>We'd love to hear from you. Fill out the form and we'll get back to you as soon as possible.</p>
+        <p>Give us a call and we'll be happy to answer any questions about the equipment.</p>
 
         <div class="contact-details">
           <h3>Contact Information</h3>
-          <p><strong>Email:</strong> contact@mrcoryfast.com</p>
-          <p><!-- Add phone number if desired --></p>
+          <p><strong>Phone:</strong></p>
+          <a href="tel:503-383-9702" class="phone-number">503-383-9702</a>
         </div>
       </div>
 
       <div class="contact-form-container">
-        <form class="contact-form">
-          <div class="form-group">
-            <label for="name">Name *</label>
-            <input type="text" id="name" name="name" required>
-          </div>
-
-          <div class="form-group">
-            <label for="email">Email *</label>
-            <input type="email" id="email" name="email" required>
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Phone</label>
-            <input type="tel" id="phone" name="phone">
-          </div>
-
-          <div class="form-group">
-            <label for="equipment">Equipment of Interest</label>
-            <input type="text" id="equipment" name="equipment" placeholder="Which equipment are you interested in?">
-          </div>
-
-          <div class="form-group">
-            <label for="message">Message *</label>
-            <textarea id="message" name="message" rows="6" required></textarea>
-          </div>
-
-          <button type="submit" class="submit-btn">Send Message</button>
-        </form>
+        <div class="coming-soon">
+          <h3>Coming Soon</h3>
+          <p>Online contact form coming soon.<br>For now, please give us a call!</p>
+        </div>
       </div>
     </section>
   </main>
