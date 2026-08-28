@@ -1,4 +1,29 @@
-# Fast Farms - Equipment Sales Website
+# MrCoryFast.com
+
+Personal site for Cory Fast — moving from an equipment-sales site to a
+**creator site**: a feed of projects, with farm equipment kept as one section.
+
+> ## 🔨 A rebuild is in progress
+>
+> | | |
+> |---|---|
+> | **Currently live** | The static site in `public/` — plain HTML/CSS/JS + Express |
+> | **Being built** | A Next.js app in `web/`, on branch **`nextjs-rebuild`** |
+> | **Status** | Not deployed. `main` is untouched and is what Vercel serves |
+>
+> **Start with [`HANDOFF.md`](HANDOFF.md)** for current status and what's next.
+> [`web/README.md`](web/README.md) covers the new app.
+> [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md) documents the original static site.
+>
+> If `web/` seems to be missing, you're on `main` —
+> `git checkout nextjs-rebuild`.
+
+---
+
+## The original static site
+
+Everything below describes the site in `public/`, which is still what
+mrcoryfast.com serves.
 
 A clean, modern website for listing and selling farm equipment including tractors, trucks, implements, and pickups.
 
