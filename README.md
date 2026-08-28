@@ -9,8 +9,9 @@ A clean, modern website for listing and selling farm equipment including tractor
 - **Database**: Supabase (connected & secured ✅)
 - **Authentication**: Supabase Auth (email/password)
 - **Storage**: Supabase Storage (equipment images)
+- **Analytics**: Google Analytics 4 (G-BDKD0NT6KJ)
 - **Development**: Nodemon, Browser-sync, Concurrently
-- **Hosting**: Vercel (ready to deploy)
+- **Hosting**: Vercel
 
 ## Project Structure
 
@@ -84,12 +85,13 @@ This runs both the Node server and Browser-sync for automatic reloading.
 - ✅ **Row Level Security (RLS) enabled**
 - ✅ **Secure image uploads (authenticated only)**
 - ✅ **Multi-photo support (up to 5 per listing)**
+- ✅ **Deployed to Vercel**
+- ✅ **Google Analytics 4 integrated**
 
 ### Next Steps:
 1. Move Supabase credentials to environment variables
 2. Add equipment listings via admin panel
-3. Connect public site to load equipment from Supabase
-4. Deploy to Vercel
+3. Implement contact form functionality
 
 ## Data Structure (Supabase Ready)
 
