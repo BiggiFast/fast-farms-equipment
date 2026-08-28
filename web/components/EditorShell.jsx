@@ -57,7 +57,7 @@ export default function EditorShell({
 
       {/* Sticks to the bottom of the screen so Save is always reachable
           without scrolling to the end of a long form on a phone. */}
-      <div className="sticky bottom-0 -mx-4 border-t bg-white dark:bg-black px-4 py-3 flex gap-3">
+      <div className="sticky bottom-0 -mx-4 border-t bg-paper px-4 py-3 flex gap-3">
         <button
           type="submit"
           disabled={busy}
