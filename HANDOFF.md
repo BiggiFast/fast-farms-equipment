@@ -1,10 +1,17 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-08-28**
+**Last updated: 2026-09-02**
 **Branch: `nextjs-rebuild` (not `main`)**
 
-Start here. This is the living "where are we" document. `PROJECT_SUMMARY.md`
-describes the original static site; `web/README.md` covers the new app.
+Start here. This is the living "where are we" document.
+
+- **Why** something is the way it is → `DECISIONS.md`
+- How the new app works → `web/README.md`
+- The survey requirements → `docs/SURVEY_SPEC.md`
+- The original static site → `docs/PROJECT_SUMMARY.md`
+
+Say **"checkpoint"** at the end of a work session and this file gets updated
+along with everything else. See `.claude/skills/checkpoint/`.
 
 ---
 
@@ -63,26 +70,51 @@ The 1995 International Harvester 4900 Grain Truck is intentionally hidden —
 
 ---
 
-## In progress — Cory, as of 2026-08-28
+## In progress — as of 2026-09-02
 
-**Designing the layout in Claude Design.** Expected to take a few days.
+**Cory is designing the new layout in Claude Design**, in spurts as time allows.
 
-Everything built so far is deliberately plain markup — semantic HTML with
-minimal Tailwind, using the warm palette carried over from `main-styles.css`.
-It is waiting to be styled, not waiting to be rewritten.
+Separately, he's specced a **family equipment-ownership survey**
+(`docs/SURVEY_SPEC.md`) — an invite-only survey asking relatives who originally
+owned each machine, to capture that knowledge before it's lost. The spec was
+reviewed and is sound; three questions were resolved on 2026-09-02 (see
+`DECISIONS.md`).
 
 ---
 
-## Next up (roughly in order)
+## Next up — agreed plan, in this order
 
-1. **Apply the design** once wireframes are ready. The main event.
-2. **RSS feed** — the piece that makes a self-owned feed actually followable.
-   Cory explicitly wants independence from platform algorithms; without RSS,
-   people have no way to subscribe.
-3. **Google Analytics** — the old site's `G-BDKD0NT6KJ` tag needs adding once,
-   in `app/layout.js`. On the old site it was pasted into every page by hand.
-4. **Deploy / cutover plan** — point mrcoryfast.com at the Next.js app. Needs
-   care: `vercel.json` currently forces static serving of `public/`.
+The survey needs the site deployed, and the deploy shouldn't be tangled up with
+a new feature. So:
+
+1. **Port the existing design into the Next.js app** — carry across the hero,
+   nav, fonts (EB Garamond, Bebas Neue, Montserrat) and card styling from
+   `main-styles.css` / `styles.css`. Not a redesign; the goal is that the new
+   site looks like the current one.
+2. **Push the branch and check a Vercel preview URL.** A branch deploy, not the
+   real domain. Nothing public changes.
+3. **Cut over mrcoryfast.com** once the preview looks right. `vercel.json` needs
+   changing — it currently forces static serving of `public/`. Rollback is
+   reverting one file.
+4. **Build the survey** per `docs/SURVEY_SPEC.md`, in stages: schema and
+   sign-in, then the survey page, then admin People/Items, then Results + CSV.
+5. **RSS feed** — what makes a self-owned feed followable. Independence from
+   platform algorithms is the point of the project; without RSS there's no way
+   to subscribe.
+6. **Google Analytics** — `G-BDKD0NT6KJ`, added once in `app/layout.js`.
+7. **Apply the new design** when the wireframes are ready. Same mechanism as
+   step 1 — a swap, not a rebuild.
+
+### Before the survey can be built
+
+Cory needs to fetch two things:
+
+- **`SUPABASE_SERVICE_ROLE_KEY`** — Supabase dashboard, Settings → API.
+  **This key bypasses all security rules.** Never commit it, never prefix it
+  `NEXT_PUBLIC_`, never let it reach a browser.
+- **His Supabase user UUID**, for `ADMIN_USER_IDS`.
+
+`SURVEY_SESSION_SECRET` can be generated locally.
 
 ### Deferred, not forgotten
 
@@ -152,7 +184,7 @@ the site rendered dark on a dark-mode Mac.
 
 ## Branch and repo
 
-- Working branch: **`nextjs-rebuild`** — 9 commits, nothing pushed
+- Working branch: **`nextjs-rebuild`** — nothing pushed to GitHub yet
 - `main` is untouched and is what Vercel deploys
 - Remote: github.com/BiggiFast/fast-farms-equipment
 

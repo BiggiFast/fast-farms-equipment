@@ -1,0 +1,140 @@
+# Decisions
+
+Why things are the way they are. **Append-only** — newest at the top. If a
+decision is reversed, add a new entry saying so rather than editing the old one.
+
+The point of this file is to stop re-litigating settled questions after a gap in
+work, and to make it obvious when something was a deliberate choice rather than
+an accident.
+
+---
+
+## 2026-09-02 — Deploy the current design first; no "coming soon" banner
+
+**Decided:** Port the existing visual design into the Next.js app, deploy that,
+and apply the new design later as a normal update. No "new site coming soon"
+message.
+
+**Why:** Cory suggested a coming-soon banner over the hero. A buyer deciding
+whether to call about a $200k tractor reads "unfinished" as "not serious." If
+the site looks like it does today, there's no gap to apologize for — the current
+design isn't a placeholder, it's a design he chose. Deploying also gets the
+per-machine equipment pages indexed by Google weeks earlier than waiting on the
+redesign.
+
+**Also decided:** deploy and survey are **separate steps, in that order**. The
+cutover has real risk (`vercel.json` forces static serving of `public/`), and it
+shouldn't be debugged alongside a new feature carrying service-role keys.
+
+---
+
+## 2026-09-02 — Survey owner options stay as specified
+
+**Decided:** `OWNER_OPTIONS = ['Grandpa', 'Doug', 'Kaley', 'Kirk', 'Not sure']`.
+No "Mom" option and no "Someone else" option.
+
+**Why:** Claude raised that the stated purpose mentions Mom's equipment but the
+list has no Mom. Cory: all the equipment was Doug's; Mom never owned any
+independently, and the family will understand "Doug" to mean that. Every item he
+plans to upload belongs to someone on the list, and the free-text note covers
+anything unexpected.
+
+**Revisit if:** items start appearing that genuinely belong to nobody listed.
+
+---
+
+## 2026-09-02 — Survey uses the current design, not the new one
+
+**Decided:** The ownership survey mimics the existing site design.
+
+**Why:** It's temporary, invite-only, and unlinked. It shouldn't block on the
+redesign, and it shouldn't get its own visual language.
+
+---
+
+## 2026-08-28 — Site is light-only; no dark mode
+
+**Decided:** No `prefers-color-scheme` block in `globals.css`.
+
+**Why:** The Next.js starter shipped one, so the site rendered dark on a
+dark-mode Mac. Cory preferred the light theme. Rather than force white, the
+palette from the old site's `main-styles.css` was carried over — his own
+choices, described there as "Oregon farm in spring."
+
+---
+
+## 2026-08-28 — Equipment relisted; sold items stay hidden
+
+**Decided:** The five remaining machines are active. The 1995 International
+Harvester 4900 Grain Truck stays `is_active = false` because **it sold**.
+
+**Why:** All listings had been switched off during family friction, leaving the
+public equipment page effectively empty — only a non-equipment "Site UPDATE"
+post was visible. That post is now soft-deleted.
+
+**Open:** sold items are currently indistinguishable from hidden ones. A real
+`sold` state would let the page stay up marked SOLD rather than 404ing, which is
+better for buyer trust and for saved links. Deferred, not rejected.
+
+---
+
+## 2026-08-27 — Content lives in Supabase, not markdown files
+
+**Decided:** Projects and updates are database rows, edited through a web admin.
+
+**Why:** Cory's requirement was posting from his phone while away from the
+computer. Markdown-in-the-repo would mean writing a file, committing, and
+triggering a rebuild — from a phone, standing in a field. He wouldn't do it.
+Supabase publishes instantly with no deploy.
+
+---
+
+## 2026-08-27 — Projects have many updates; updates can stand alone
+
+**Decided:** `updates.project_id` is nullable. An update may belong to a project
+or be a standalone post. The feed shows everything chronologically; project
+pages collect their own.
+
+**Why:** Cory described wanting to "add an idea or an update to a post" over
+time — a build log, not a blog. But forcing every passing thought into a project
+adds friction to the thing he most wants to do. The nullable FK supports both.
+
+**Consequence:** deleting a project sets `project_id` to NULL rather than
+cascading. Months of daily entries must not vanish because a project was tidied
+up.
+
+---
+
+## 2026-08-27 — One page per piece of equipment
+
+**Decided:** Each listing renders server-side at `/equipment/<slug>` with its
+own title, description, share image, and Product structured data.
+
+**Why:** Cory's own idea, and the highest-value SEO change available. Listings
+previously lived at one URL and were fetched by JavaScript after load, so
+crawlers saw an empty page and there was no URL to rank. Now a search for
+"New Holland H7230 haybine for sale" can land on that exact machine.
+
+---
+
+## 2026-08-27 — List queries fail soft; detail queries throw
+
+**Decided:** `getFeed`, `getProjects`, `getEquipment` log and return `[]` on
+error. `getEquipmentItem` and `getProject` deliberately throw.
+
+**Why:** A transient database outage shouldn't break a deploy or blank the site.
+But a detail page rendering a blip as "not found" risks a cached 404 getting a
+live listing deindexed — the opposite of the goal.
+
+---
+
+## 2026-08-27 — Rebuild in Next.js rather than extending the static site
+
+**Decided:** Rebuild in Next.js 16 in `web/`, keeping the old site live until
+cutover.
+
+**Why:** Four things the static site couldn't do well: shared layouts (adding
+Google Analytics meant editing every page by hand), image optimization on a
+photo-heavy site, per-page metadata and share cards, and server-rendered content
+that search engines can actually read. A growing project feed is exactly what
+hand-written HTML is worst at.

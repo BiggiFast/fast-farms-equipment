@@ -12,11 +12,28 @@ Personal site for Cory Fast — moving from an equipment-sales site to a
 > | **Status** | Not deployed. `main` is untouched and is what Vercel serves |
 >
 > **Start with [`HANDOFF.md`](HANDOFF.md)** for current status and what's next.
-> [`web/README.md`](web/README.md) covers the new app.
-> [`PROJECT_SUMMARY.md`](PROJECT_SUMMARY.md) documents the original static site.
 >
 > If `web/` seems to be missing, you're on `main` —
 > `git checkout nextjs-rebuild`.
+
+## Where the documentation lives
+
+| File | What it's for |
+|---|---|
+| **[`HANDOFF.md`](HANDOFF.md)** | **Read first.** Current state, what's next, what's blocked |
+| [`DECISIONS.md`](DECISIONS.md) | Why things are the way they are. Append-only |
+| [`web/README.md`](web/README.md) | How the Next.js app works |
+| [`docs/SURVEY_SPEC.md`](docs/SURVEY_SPEC.md) | Spec for the family equipment-ownership survey |
+| [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md) | The original static site |
+| [`docs/`](docs/) | Reference: admin setup, security |
+| [`docs/archive/`](docs/archive/) | Finished history. Kept, not maintained |
+
+### Saving state between sessions
+
+Work happens in short bursts, so there's a `/checkpoint` command
+(`.claude/skills/checkpoint/`). Say **"checkpoint"** or "I'm stopping for now"
+and Claude commits outstanding work, updates `HANDOFF.md`, logs any decisions,
+and refreshes its memory — so nothing lives only in a chat window.
 
 ---
 
