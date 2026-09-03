@@ -1,9 +1,13 @@
 ---
-name: checkpoint
-description: Save the current state of work so the session can end with nothing lost. Use when Cory says "checkpoint", "let's document where we are", "I'm stopping for now", "save state", or otherwise signals he's pausing. Also run proactively before any long or risky operation.
+name: save-state
+description: Save the current state of work so the session can end with nothing lost. Use when Cory says "checkpoint", "save state", "let's document where we are", "I'm stopping for now", or otherwise signals he's pausing. Also run proactively before any long or risky operation.
 ---
 
-# Checkpoint
+# Save state (a.k.a. "checkpoint")
+
+Invoked as `/save-state`. Named that way because `checkpoint` collides with a
+built-in Claude Code command — but "checkpoint" is still the word Cory uses, and
+saying it should trigger this.
 
 Cory works on this project in short bursts, sometimes days apart, and a session
 may end without warning. A checkpoint makes the repository the source of truth

@@ -30,8 +30,8 @@ Personal site for Cory Fast — moving from an equipment-sales site to a
 
 ### Saving state between sessions
 
-Work happens in short bursts, so there's a `/checkpoint` command
-(`.claude/skills/checkpoint/`). Say **"checkpoint"** or "I'm stopping for now"
+Work happens in short bursts, so there is a `/save-state` command
+(`.claude/skills/save-state/`). Say **"checkpoint"** or "I am stopping for now"
 and Claude commits outstanding work, updates `HANDOFF.md`, logs any decisions,
 and refreshes its memory — so nothing lives only in a chat window.
 

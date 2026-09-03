@@ -9,6 +9,18 @@ an accident.
 
 ---
 
+## 2026-09-02 — The state-saving skill is `/save-state`, not `/checkpoint`
+
+**Decided:** The skill is named `save-state`. "Checkpoint" remains the trigger
+phrase in its description.
+
+**Why:** `checkpoint` is a built-in Claude Code CLI command, so a skill by that
+name can't be invoked — the Skill tool refuses it and points at the built-in.
+Discovered by trying to run it. The word Cory actually says is "checkpoint," so
+that stays a trigger; only the slash command changed.
+
+---
+
 ## 2026-09-02 — Deploy the current design first; no "coming soon" banner
 
 **Decided:** Port the existing visual design into the Next.js app, deploy that,

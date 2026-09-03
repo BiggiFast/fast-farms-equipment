@@ -11,7 +11,7 @@ Start here. This is the living "where are we" document.
 - The original static site → `docs/PROJECT_SUMMARY.md`
 
 Say **"checkpoint"** at the end of a work session and this file gets updated
-along with everything else. See `.claude/skills/checkpoint/`.
+along with everything else. See `.claude/skills/save-state/`.
 
 ---
 
@@ -73,6 +73,8 @@ The 1995 International Harvester 4900 Grain Truck is intentionally hidden —
 ## In progress — as of 2026-09-02
 
 **Cory is designing the new layout in Claude Design**, in spurts as time allows.
+Nothing is blocked on Claude; the next coding step (the design port) waits on
+nothing but a decision to start it.
 
 Separately, he's specced a **family equipment-ownership survey**
 (`docs/SURVEY_SPEC.md`) — an invite-only survey asking relatives who originally
