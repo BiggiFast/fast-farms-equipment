@@ -28,6 +28,19 @@ Personal site for Cory Fast — moving from an equipment-sales site to a
 | [`docs/`](docs/) | Reference: admin setup, security |
 | [`docs/archive/`](docs/archive/) | Finished history. Kept, not maintained |
 
+### Secret protection
+
+**This repo is public.** A `pre-commit` hook in `.githooks/` blocks commits
+containing anything secret-shaped — JWTs, private keys, `.env` files, or a
+variable named `*_SECRET` / `*_SERVICE_ROLE_KEY` with a real value.
+
+It's enabled by `git config core.hooksPath .githooks`, which is already set on
+this machine. After a fresh clone, run that once to turn it back on.
+
+Secrets belong in `web/.env.local` (gitignored) and in Vercel's Environment
+Variables. `git commit --no-verify` bypasses the hook — use it only when you're
+certain it's a false alarm.
+
 ### Saving state between sessions
 
 Work happens in short bursts, so there is a `/save-state` command

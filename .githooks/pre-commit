@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+#
+# Blocks commits that look like they contain a secret.
+#
+# This repo is PUBLIC. Bots scan public GitHub commits for keys within
+# minutes of a push, so a secret committed here is a secret that is gone —
+# rotating it afterwards doesn't close the window it was already open.
+#
+# Installed via:  git config core.hooksPath .githooks
+# Bypass (rare, be certain):  git commit --no-verify
+
+set -uo pipefail
+
+RED=$'\033[0;31m'; YEL=$'\033[0;33m'; NC=$'\033[0m'
+fail=0
+
+report() {
+  printf '%s BLOCKED %s %s\n' "$RED" "$NC" "$1"
+  fail=1
+}
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+# --- 1. Env files that should never be tracked -------------------------------
+while IFS= read -r file; do
+  case "$(basename "$file")" in
+    .env|.env.local|.env.production|.env.development)
+      report "$file — env files hold secrets and must stay untracked."
+      ;;
+  esac
+done <<< "$staged"
+
+# --- 2. Secret-shaped content in the staged diff ------------------------------
+# Only added lines, so pre-existing content doesn't trip it forever.
+added=$(git diff --cached --unified=0 | grep '^+' | grep -v '^+++' || true)
+
+check() {
+  local pattern="$1" label="$2"
+  # -e is required: some patterns begin with "-" and would be read as flags
+  if printf '%s' "$added" | grep -Eq -e "$pattern"; then
+    report "$label"
+  fi
+}
+
+# Supabase service role JWT — the payload contains "service_role"
+check 'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}' \
+      "A JWT-shaped string. If it's a Supabase SERVICE ROLE key, it must not be committed."
+check 'sb_secret_[A-Za-z0-9_-]{10,}' \
+      "A Supabase secret key (sb_secret_...)."
+check '(SERVICE_ROLE_KEY|SESSION_SECRET|SERVICE_KEY)[[:space:]]*[=:][[:space:]]*[^[:space:]\"'\'']{8,}' \
+      "A secret assigned a real value. Use .env.local, and commit only .env.example with placeholders."
+check '-----BEGIN [A-Z ]*PRIVATE KEY-----' \
+      "A private key block."
+
+# --- 3. Verdict ---------------------------------------------------------------
+if [ "$fail" -ne 0 ]; then
+  cat <<MSG
+
+${YEL}Nothing was committed.${NC}
+
+  Secrets belong in web/.env.local (already gitignored) and in Vercel's
+  Environment Variables settings. Never in a tracked file.
+
+  If this is a false alarm — an example value, a public anon key — either
+  reword it or bypass deliberately:
+
+      git commit --no-verify
+
+MSG
+  exit 1
+fi
+
+exit 0
