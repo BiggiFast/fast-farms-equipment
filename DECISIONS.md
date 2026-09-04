@@ -9,6 +9,54 @@ an accident.
 
 ---
 
+## 2026-09-03 — Survey uses token links and introduces no new secrets
+
+**Decided:** Rewrote the survey spec (v2). Respondents get a private link
+containing a random 32-character token instead of signing in with an email or
+phone number. Admin access is enforced by an RLS policy checking `auth.uid()`
+against a `survey_admins` table. Respondents reach data only through four
+`SECURITY DEFINER` functions.
+
+**Why:** Cory revealed the real threat model — some family members have an
+incentive to avoid establishing ownership so they can later claim machinery.
+That makes v1's allowlist the *weaker* design: family already know each other's
+phone numbers, so the credential is one an adversary holds by default. A token
+must leak to be abused, and leaking is detectable.
+
+Removing the service role key also removes the highest-consequence secret from
+what is a **public** GitHub repo. v2 needs no new environment variables at all —
+`SUPABASE_SERVICE_ROLE_KEY`, `SURVEY_SESSION_SECRET`, and `ADMIN_USER_IDS` are
+all designed out. It further deletes the phone-normalization bug v1 itself
+called the most likely cause of "it says I'm not on the list."
+
+**Three additions Cory approved**, all driven by the threat model:
+1. Bulk revocation with checkboxes — kill a circulating link from a phone
+2. An access log — forwarding becomes visible *before* answers are corrupted
+3. Append-only answers — a changed answer is history, not a silent overwrite
+
+**Also:** a full-history CSV export. If the record is ever questioned, an
+unalterable log with timestamps is what gives it weight.
+
+**Revisit if:** the survey needs to be opened to people Cory can't text
+individually.
+
+---
+
+## 2026-09-03 — A pre-commit hook blocks secret-shaped commits
+
+**Decided:** `.githooks/pre-commit`, enabled via `core.hooksPath`, refuses any
+commit containing `.env` files, JWT-shaped strings, `sb_secret_` keys,
+`*_SECRET` / `*_SERVICE_ROLE_KEY` with a real value, or PEM private keys.
+
+**Why:** The GitHub repo is **public**. Bots scan public commits for keys within
+minutes, so a leaked secret can't be un-leaked by rotating it afterwards. Kept
+even though v2 needs no secrets — the guard costs nothing and the next feature
+might.
+
+**Bypass:** `git commit --no-verify`, for genuine false positives only.
+
+---
+
 ## 2026-09-02 — The state-saving skill is `/save-state`, not `/checkpoint`
 
 **Decided:** The skill is named `save-state`. "Checkpoint" remains the trigger

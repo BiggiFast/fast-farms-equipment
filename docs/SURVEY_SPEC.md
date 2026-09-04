@@ -1,94 +1,135 @@
-# Equipment Ownership Survey — Functional Spec (Next.js)
+# Equipment Ownership Survey — Functional Spec v2
+
+> **v2 supersedes the original allowlist design**, archived at
+> `docs/archive/SURVEY_SPEC_v1_allowlist.md`. What changed and why is in
+> "Changes from v1" at the end. Most of v1's detail survives — the parts that
+> changed are access control and answer storage.
+
+---
 
 ## Purpose
 
-A temporary, invite-only survey on mrcoryfast.com that collects family members'
-opinions on who originally owned each piece of farm equipment. The goal is to
-capture this knowledge before it is lost. It is not a public feature and should
-not be indexed or linked from the main site.
+A temporary, invite-only survey collecting family members' opinions on who
+originally owned each piece of farm equipment, so that knowledge is captured
+before it's lost. Not a public feature; not indexed; not linked from the site.
 
-Build it to be easy to remove later: keep survey code under `app/survey`,
-`app/api/survey`, `app/admin/survey` (or equivalent), and `lib/survey.js`, so
-deleting the feature is deleting those folders plus dropping four tables.
+Build it to be easy to remove later: survey code under `app/survey`,
+`app/api/survey`, `app/admin/survey`, and `lib/survey.js`, so deleting the
+feature is deleting those folders plus dropping five tables.
+
+---
+
+## Threat model — read this first
+
+This is **not** a low-stakes family poll. Some family members have an incentive
+to avoid establishing who owned what, so they can later claim machinery as their
+own. The design assumes:
+
+- Someone may try to answer **as another person**
+- Someone may **forward their link** to let another person answer
+- Someone may **revisit and change** an earlier answer once they see where
+  things are heading
+- The resulting record may need to be **credible to someone outside the family**
+
+Three consequences drive the design:
+
+1. **Revocation must be immediate**, per person, from a phone.
+2. **Forwarding must be visible**, not merely reversible after the damage.
+3. **Answers are append-only.** A changed answer is history, not an overwrite.
+
+### Why token links beat an email/phone allowlist here
+
+v1 had respondents sign in by typing an email or phone number matched against an
+allowlist. Under this threat model that's the *weaker* option: **family members
+already know each other's phone numbers.** The credential is something the
+adversary has by default. No interception needed.
+
+A token is a random string nobody holds unless it's deliberately shared. It must
+leak to be abused, and leaking is detectable (see the access log).
 
 ---
 
 ## Stack
 
-- Next.js (App Router), JavaScript, plain CSS — match whatever conventions the
-  migrated app already uses. Do **not** introduce a new UI library or styling
-  system for this feature.
+- Next.js (App Router), JavaScript. Styling follows the site's existing
+  conventions in `app/globals.css` — semantic classes, the ported palette. Do
+  not introduce a new UI library.
 - Supabase (PostgreSQL + Storage + Auth)
-- Deployed on Vercel, auto-deploy on push to `main`
-- Existing admin protected by Supabase Auth
-
-Follow the existing file layout of the migrated site. Where this spec names a
-path, treat it as a suggestion that should bend to match what's already there.
+- Deployed on Vercel; production deploys from `main`
 
 ---
 
-## Key architectural requirement
+## Key architectural decision: no new secrets
 
-**Respondent sign-in is handled server-side. Never in the browser.**
+**This feature introduces zero server-only credentials.** It runs on the same
+public anon key the rest of the site already uses. That is deliberate — the repo
+is public, and a leaked service role key would be unrecoverable.
 
-Respondents do not get Supabase Auth accounts. They sign in by typing an email
-or phone number that matches an allowlist. That check happens in a Route Handler
-using the Supabase **service role key**.
+| v1 required | v2 |
+|---|---|
+| `SUPABASE_SERVICE_ROLE_KEY` | Not needed — RLS enforces admin access |
+| `SURVEY_SESSION_SECRET` | Not needed — no signed session; the token is the credential |
+| `ADMIN_USER_IDS` | Not needed — admin allowlist is a database table |
 
-Consequently:
+### How access is enforced
 
-- All four survey tables have RLS enabled with **no policies at all**, plus an
-  explicit `REVOKE ALL ... FROM anon, authenticated`. Only the service role
-  reaches them. (The revoke matters: it is the durable guarantee, and it aligns
-  with the Supabase Data API change requiring explicit grants.)
-- The browser never queries survey tables directly. It calls Route Handlers.
-- Server-only environment variables, added to `.env.local` and to Vercel:
-  - `SUPABASE_SERVICE_ROLE_KEY`
-  - `SURVEY_SESSION_SECRET` (random 32+ bytes, hex)
-  - `ADMIN_USER_IDS` (comma-separated Supabase user UUIDs)
+**Admins** are already authenticated through Supabase Auth. The check moves out
+of application code and into the policy itself:
 
-  None of these may be prefixed `NEXT_PUBLIC_`.
+```sql
+create policy "admins manage survey items"
+  on survey_items for all to authenticated
+  using (auth.uid() in (select user_id from survey_admins))
+  with check (auth.uid() in (select user_id from survey_admins));
+```
 
-### Respondent session
+The database enforces it. A route handler that forgets to check cannot leak
+anything, because there is nothing privileged to leak.
 
-On successful sign-in, set a cookie named `survey_session`:
+**Respondents** have no account and no identity the database can see. All survey
+tables have RLS enabled with **no policies for `anon`**, plus an explicit
+`REVOKE ALL ... FROM anon`. Respondents reach their data only through
+`SECURITY DEFINER` functions with `EXECUTE` granted to `anon`. Each function
+takes the token and validates it internally.
 
-- Value: `{respondentId}.{expiresAtEpochMs}.{hmac}` where the HMAC is
-  SHA-256 over `{respondentId}.{expiresAtEpochMs}` keyed with
-  `SURVEY_SESSION_SECRET`, using `node:crypto`.
-- Verify with `crypto.timingSafeEqual`, never `===`.
-- `httpOnly: true`, `sameSite: 'lax'`, `path: '/'`, `maxAge` 30 days,
-  and `secure: process.env.NODE_ENV === 'production'` so local http still works.
+So the public key can do exactly four things, and nothing else:
 
-**Do not gate `/survey/items` in `middleware.js`.** Next.js middleware runs on
-the edge runtime, where `node:crypto` is unavailable, so HMAC verification will
-fail there. Verify the cookie inside the page's Server Component and in each
-Route Handler instead.
+| Function | Does |
+|---|---|
+| `survey_open(token, ip, user_agent)` | Validate token, log access, return the respondent's name |
+| `survey_load(token, ip, user_agent)` | Return active items plus **this** respondent's current answers |
+| `survey_answer(token, item_id, owner, note, ip)` | Append one answer row |
+| `survey_progress(token)` | Answered / total count |
 
-Every survey request re-reads the respondent from the database and confirms
-`is_active = true`. Deactivating someone must lock them out on their very next
-request, not when their cookie expires.
+Every one re-checks `is_active` and `is_frozen` on each call. Deactivating
+someone locks them out on their **very next request**, not when something
+expires.
 
-Put the verify helper in one place (`lib/survey-session.js`) and call it from
-every entry point. Do not reimplement it per route.
+**Rate limiting is not required.** There is no login to brute-force, and
+guessing a 32-character random token is not feasible. v1's
+`survey_login_attempts` table is dropped from the design.
 
-### Admin authorization
-
-Every survey admin Route Handler must, server-side:
-
-1. Read the Supabase session from cookies (`@supabase/ssr`)
-2. Confirm a user exists
-3. Confirm `user.id` is in `ADMIN_USER_IDS`
-
-Only then may it touch the service role client.
-
-Step 3 is not optional. Treating "any authenticated Supabase user" as the admin
-is a known gap on the Saoirse project; do not reproduce it here. Hiding admin UI
-client-side is not authorization.
+Put every function call behind one helper in `lib/survey.js`. Do not scatter
+`.rpc()` calls through components.
 
 ---
 
 ## Database schema
+
+Five tables and one view. All have RLS enabled, all revoke `anon`, all grant
+admins through `survey_admins`.
+
+### `survey_admins`
+
+Who may administer the survey. Referenced by every admin policy.
+
+| Column | Type | Notes |
+|---|---|---|
+| user_id | uuid | PK, references `auth.users(id)` on delete cascade |
+| note | text | e.g. "Cory" |
+| created_at | timestamptz | default `now()` |
+
+Seed with Cory's Supabase user id. This is the one manual step at install.
 
 ### `survey_respondents`
 
@@ -96,34 +137,13 @@ client-side is not authorization.
 |---|---|---|
 | id | uuid | PK, default `gen_random_uuid()` |
 | name | text | Not null, e.g. "Kaley Fast" |
-| is_active | boolean | Not null, default true |
-| created_at | timestamptz | Not null, default `now()` |
-
-### `survey_logins`
-
-One respondent can have several approved identifiers (a phone and an email).
-
-| Column | Type | Notes |
-|---|---|---|
-| id | uuid | PK |
-| respondent_id | uuid | FK → survey_respondents, **on delete cascade** |
-| identifier | text | Not null, normalized (see below) |
-| kind | text | `'email'` or `'phone'` |
+| token | text | Not null, **unique**. `encode(gen_random_bytes(16), 'hex')` — 32 chars |
+| is_active | boolean | Not null, default true. **The kill switch** |
+| is_frozen | boolean | Not null, default false. Answers become read-only |
+| token_rotated_at | timestamptz | Set when a link is regenerated |
 | created_at | timestamptz | default `now()` |
 
-Unique index on `identifier`. Two people must not share one. The admin UI must
-surface a readable error on collision, not a raw Postgres message.
-
-**Normalization** — apply identically on save and on sign-in:
-
-- Email: trim, lowercase.
-- Phone: strip all non-digits; if 11 digits starting with `1`, drop the leading
-  `1`; store the bare 10 digits. So `(555) 123-4567`, `555-123-4567`, and
-  `+1 555 123 4567` all match.
-- Detect `kind` by presence of `@`.
-
-Put normalization in `lib/survey.js` and call the same function from both paths.
-Divergence here is the single most likely cause of "it says I'm not on the list."
+Index on `token`. Never expose `token` in any payload except the admin UI.
 
 ### `survey_items`
 
@@ -131,12 +151,12 @@ Divergence here is the single most likely cause of "it says I'm not on the list.
 |---|---|---|
 | id | uuid | PK |
 | title | text | Not null, e.g. "Red disc harrow, north shed" |
-| admin_note | text | Nullable. Cory's own note, never shown to respondents |
+| admin_note | text | Nullable. Cory's own note, **never** shown to respondents |
 | source | text | `'upload'` or `'equipment'` |
-| equipment_id | uuid | Nullable FK → equipment, **on delete set null** |
-| photos | jsonb | `[{ "url": "...", "order": 0 }]` — same shape as equipment |
+| equipment_id | uuid | Nullable FK → `equipment`, **on delete set null** |
+| photos | jsonb | `[{ "url": "...", "is_main": true, "sort_order": 0 }]` |
 | is_active | boolean | Not null, default true |
-| confirmed_owner | text | Nullable. Set by Cory once he's satisfied |
+| confirmed_owner | text | Nullable. Cory's conclusion; **never** sent to respondents |
 | sort_order | integer | Not null, default 0 |
 | created_at | timestamptz | default `now()` |
 | deleted_at | timestamptz | Nullable, soft delete |
@@ -144,201 +164,225 @@ Divergence here is the single most likely cause of "it says I'm not on the list.
 `ON DELETE SET NULL` is deliberate: deleting an equipment listing must never
 delete a survey item or the answers about it.
 
-Order items by `sort_order`, then `created_at` — `sort_order` defaults to 0, so
-without the tiebreaker the order is nondeterministic and cards will appear to
-shuffle between page loads.
+Order by `sort_order`, then `created_at`. `sort_order` defaults to 0, so without
+the tiebreaker cards shuffle between page loads.
 
-### `survey_responses`
+**The photo shape matches `equipment` and `updates`** so `lib/photos.js` works
+unchanged. (v1 specified `{url, order}`; corrected here.)
+
+### `survey_responses` — append-only
+
+**Every answer is a new row. Nothing is ever updated.**
 
 | Column | Type | Notes |
 |---|---|---|
 | id | uuid | PK |
-| item_id | uuid | FK → survey_items, on delete cascade |
-| respondent_id | uuid | FK → survey_respondents, on delete cascade |
+| item_id | uuid | FK → `survey_items`, on delete cascade |
+| respondent_id | uuid | FK → `survey_respondents`, on delete cascade |
 | owner | text | One of `OWNER_OPTIONS` |
-| note | text | Nullable, respondent's free text |
+| note | text | Nullable, trimmed, capped at 2000 chars |
 | created_at | timestamptz | default `now()` |
-| updated_at | timestamptz | default `now()` |
+| ip | text | Nullable, from `x-forwarded-for` |
 
-Unique constraint on `(item_id, respondent_id)`. Answers are upserted on that
-constraint. Set `updated_at` explicitly in the route handler on every upsert —
-a column default does not fire on update.
+**No unique constraint on `(item_id, respondent_id)`** — that's the point.
+Someone who answers "Grandpa" on Tuesday and "Kirk" on Friday leaves both rows.
+
+### `survey_current_responses` — view
+
+The latest answer per person per item.
+
+```sql
+create view survey_current_responses as
+select distinct on (item_id, respondent_id) *
+from survey_responses
+order by item_id, respondent_id, created_at desc;
+```
+
+Everything reading "the current answer" reads this. The Results matrix flags any
+pair with more than one row as **changed**, and the history is one click away.
+
+### `survey_access_log`
+
+Makes forwarding visible.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | uuid | PK |
+| respondent_id | uuid | FK → `survey_respondents`, on delete cascade |
+| occurred_at | timestamptz | default `now()` |
+| ip | text | From `x-forwarded-for` (first entry — it's a comma-separated list) |
+| user_agent | text | Truncated to 300 chars |
+
+Written by `survey_open` and `survey_load`. Never shown to respondents.
 
 ### Owner options
 
-Define once in `lib/survey.js`:
+Defined once in `lib/survey.js`, imported everywhere, and validated server-side
+against the same array:
 
 ```js
-export const OWNER_OPTIONS = ['Grandpa', 'Doug', 'Kaley', 'Kirk', 'Not sure'];
-export const UNSURE = 'Not sure';
+export const OWNER_OPTIONS = ['Grandpa', 'Doug', 'Kaley', 'Kirk', 'Not sure']
+export const UNSURE = 'Not sure'
 ```
 
-Import it everywhere. Both the survey UI and the server-side validation read
-this same array, so adding a fifth family member later is a one-line change.
+Also enforced by a `CHECK` constraint on `survey_responses.owner`, so a bad
+value can't reach the table even if application validation is bypassed.
 
 ### Storage
 
-New bucket `survey-images`, public read.
+New bucket `survey-images`, public read; insert/update/delete for authenticated
+users only. Mirrors `equipment-images` and permits direct browser upload.
 
-Storage policies: `INSERT`/`UPDATE`/`DELETE` for authenticated users only,
-`SELECT` for public. This mirrors `equipment-images` and permits the direct
-browser upload described below.
-
-Do not reuse `equipment-images` — a separate bucket makes cleanup trivial when
-the survey is finished.
-
-Note: photos are publicly readable by URL, same as the equipment images. That is
-acceptable here, but do not put anything in this bucket you would not put on the
-public site.
+Separate from `equipment-images` so cleanup is trivial when the survey is done.
+Photos are publicly readable by URL, same as equipment images — don't put
+anything in there you wouldn't put on the public site.
 
 ---
 
 ## Public survey flow
 
-### `/survey` — sign-in page
+### `/survey/[token]` — confirmation
 
-`app/survey/page.js`
+`app/survey/[token]/page.js`, a Server Component.
 
-- Single input, `type="text"`, labelled "Enter your email or phone number"
-- `inputMode="email"` is a reasonable default; do not force a numeric keypad
-- Explanatory text: private family survey, answers recorded under their name
-- Submit → `POST /api/survey/login`
-- On failure, one neutral message: "We couldn't find that — check with Cory."
-  Never reveal whether the identifier exists but is deactivated, and never
-  distinguish "not found" from "deactivated"
-- If a valid session already exists, redirect to `/survey/items`
-- `export const metadata = { robots: { index: false, follow: false } }`
+1. Calls `survey_open(token, ip, ua)`
+2. Invalid, inactive, or unknown token → render a neutral "This link isn't
+   active. Check with Cory." **Do not** distinguish invalid from revoked
+3. Valid → show the name and a single button
 
-### `/survey/items` — the survey page
+```
+        You're answering as
+           Kaley Fast
 
-`app/survey/items/page.js` — a Server Component that:
+     [  That's me — start  ]
 
-1. Reads and verifies `survey_session`
-2. Re-checks `is_active`
-3. On failure, `redirect('/survey')` before rendering anything
-4. On success, loads items and this respondent's existing answers, and passes
-   them to a Client Component for the interactive part
+     Not you? Please don't
+     continue — text Cory.
+```
 
-Gating in the Server Component means the survey markup never reaches an
-unauthorized browser.
+This is the forwarding check. Someone handed a link that isn't theirs sees a
+name that isn't theirs, and an honest person stops.
 
-Layout, top to bottom:
+`export const metadata = { robots: { index: false, follow: false } }`
 
-1. Header: "Hi [first name]" and a sign-out link
-2. Short intro: what this is for, that there are no wrong answers, and that
-   "Not sure" is a genuinely useful answer
+### `/survey/[token]/items` — the survey
+
+Server Component. Re-validates the token, calls `survey_load`, passes results to
+a Client Component. Gating in the Server Component means the survey markup never
+reaches an unauthorized browser.
+
+Top to bottom:
+
+1. "Hi Kaley" and a link back to the confirmation screen
+2. Short intro: what it's for, no wrong answers, "Not sure" is genuinely useful
 3. Progress: "12 of 34 answered"
-4. One card per active item, in order, each containing:
-   - **Title** (heading)
-   - **Radio group** — one per `OWNER_OPTIONS` entry, single select
-   - **Photo(s)** below the radios, tappable to enlarge full-screen
-   - **Optional note field**, placeholder "Anything you remember about it?
-     (optional)"
-5. A closing state when every item is answered — a simple "That's all of them,
-   thank you" rather than an ambiguous end of list
+4. One card per active item, in order:
+   - **Title**
+   - **Radio group**, one per `OWNER_OPTIONS`, single select
+   - **Photos** below the radios, tappable to enlarge full-screen
+   - **Optional note**, placeholder "Anything you remember about it? (optional)"
+5. When everything is answered: "That's all of them, thank you" — a real end,
+   not an ambiguous end of list
 
-Behaviour requirements:
+If `is_frozen`, render everything read-only with a short banner explaining
+answers are locked and to contact Cory.
 
-- **Auto-save.** Radio change saves immediately. The note field saves on a
-  ~800ms debounce **and** on blur — blur alone is not enough, because closing a
-  mobile browser mid-typing never fires it.
-- **Per-card save state.** Saving / saved / failed. A failed save must show a
-  retry control, never fail silently.
-- **Ignore stale responses.** If someone taps three radios quickly, responses can
-  return out of order. Track a request sequence per card and apply only the
-  newest; last write wins.
-- **Blind survey.** Never send another respondent's answers or `confirmed_owner`
-  to the client. Not hidden in the DOM — not in the payload at all.
-- **Resumable.** Returning later shows their previous answers pre-selected.
-- **Mobile-first.** This will be filled out on phones. Large tap targets,
-  generous spacing between radio options, photos sized for a phone screen,
-  `loading="lazy"` on images below the fold.
+**Behaviour**
+
+- **Auto-save.** Radio change saves immediately. The note saves on a ~800ms
+  debounce **and** on blur — blur alone isn't enough, because closing a mobile
+  browser mid-typing never fires it.
+- **Per-card save state**: saving / saved / failed, with a retry control. Never
+  fail silently.
+- **Ignore stale responses.** Tapping three radios quickly can return out of
+  order. Track a request sequence per card; apply only the newest.
+- **Blind survey.** Never send another respondent's answers, `admin_note`, or
+  `confirmed_owner` to the client. Not hidden in the DOM — not in the payload.
+  This is enforced by the functions, which return only the caller's rows.
+- **Resumable.** Returning shows previous answers pre-selected.
+- **Mobile-first.** Large tap targets, generous spacing between radios, photos
+  sized for a phone, `loading="lazy"` below the fold, 16px inputs (below that,
+  iOS Safari zooms on focus).
 
 ---
 
 ## Route handlers
 
-All under `app/api/survey/`. All read cookies, so all are dynamic.
+Under `app/api/survey/`. All read headers, so all are dynamic. They exist to
+capture the real client IP, which a browser call can't supply honestly.
 
 | Route | Method | Purpose |
 |---|---|---|
-| `login/route.js` | POST | Body `{ identifier }`. Normalize, look up in `survey_logins`, confirm respondent `is_active`, set cookie. Rate limited (below) |
-| `logout/route.js` | POST | Clear the cookie |
-| `items/route.js` | GET | Active non-deleted items plus **this respondent's** answers only |
-| `answer/route.js` | POST | Body `{ item_id, owner, note }`. Upsert on `(item_id, respondent_id)` |
+| `answer/route.js` | POST | `{ token, item_id, owner, note }` → `survey_answer` |
 
-`answer` must validate server-side that `owner` is in `OWNER_OPTIONS`, that the
-item exists and is active and not deleted, and must take `respondent_id` from
-the **session cookie only** — never from the request body.
+Reads and passes `x-forwarded-for` (first entry). Validation lives in the
+database function — `owner` must be in `OWNER_OPTIONS`, the item must be active
+and not deleted, the respondent must be active and not frozen, and
+`respondent_id` is derived from the **token**, never from the request body.
 
-Trim `note` and cap it at a sane length (2000 chars).
-
-### Rate limiting
-
-In-memory counters do not work on Vercel — each request may hit a fresh
-serverless instance, so the counter resets and the limit is decorative.
-
-Use a small table instead:
-
-```sql
-create table survey_login_attempts (
-  id uuid primary key default gen_random_uuid(),
-  ip text not null,
-  attempted_at timestamptz not null default now(),
-  succeeded boolean not null default false
-);
-create index on survey_login_attempts (ip, attempted_at desc);
-```
-
-Before processing a login, count failed attempts from that IP in the last 15
-minutes. Over 10, return 429. Read the IP from the `x-forwarded-for` header.
-
-This is a family survey, so the goal is stopping casual guessing, not a
-determined attacker. Do not over-engineer it.
+Reads happen in Server Components; only writes need a handler.
 
 ---
 
-## Admin additions
+## Admin
 
-A **Survey** section inside the existing admin, behind Supabase Auth **and** the
-`ADMIN_USER_IDS` check. Three tabs.
+A **Survey** section in the existing admin, alongside Updates / Projects /
+Equipment. Access is enforced by RLS through `survey_admins` — there is no
+application-level admin check to forget, and no admin-only key.
 
 ### Tab 1 — People
 
-- Table: name, approved logins, active/inactive, count of answers submitted
-- Add a respondent: name plus one or more identifiers; `kind` auto-detected;
-  allow several per person
-- Add or remove identifiers on an existing respondent
-- **Active/inactive toggle** — the kill switch. Inactive means no sign-in and
-  existing sessions die on their next request. Answers are kept
-- Delete requires confirmation and warns that answers go with them
+The revocation console. Must be usable one-handed on a phone.
+
+Table, one row per respondent:
+
+| Name | Link | Last seen | Devices | Answers | Status | ☑ |
+|---|---|---|---|---|---|---|
+
+- **Link** — "Copy link" button. Shows the full URL only on request
+- **Last seen** — most recent access
+- **Devices** — distinct IP/user-agent pairs in the access log. **This is the
+  forwarding signal.** One or two is normal. Four across three locations is a
+  circulating link. Highlight anything above two
+- **Answers** — count submitted
+- **Status** — Active / Revoked / Frozen
+- **Checkbox** for bulk actions
+
+Bulk actions on selected rows:
+
+- **Revoke** — `is_active = false`. Link dies on the next request. Answers kept
+- **Reactivate**
+- **Regenerate link** — new token, old link dead immediately, answers kept.
+  For "she lost the text" and for "this one got passed around"
+- **Freeze** — answers become read-only, viewing still allowed
+
+Single-respondent actions: add, rename, delete (with a warning that answers go
+too — prefer Revoke).
+
+Clicking a row opens their **access history**: every visit with time, IP, and
+device.
 
 ### Tab 2 — Items
 
 - List with thumbnail, title, active/inactive, confirmed owner, response count
-- **Upload from phone.** `<input type="file" accept="image/*" multiple>`. Resize
-  client-side to 1200px max width, then upload **directly from the browser to
-  Supabase Storage** using the admin's authenticated Supabase session.
+- **Upload from phone**: `<input type="file" accept="image/*" multiple>`,
+  resized client-side to 1200px, uploaded **directly from the browser to
+  Supabase Storage** using the admin's authenticated session.
 
-  Do not proxy uploads through a Route Handler — Vercel caps serverless request
-  bodies at roughly 4.5MB and multiple photos will exceed it. Direct-to-storage
-  also matches how the equipment admin already works.
+  Do not proxy uploads through a route handler — Vercel caps serverless request
+  bodies around 4.5MB and several photos will exceed it. Direct-to-storage also
+  matches how the equipment admin already works.
+- **Pull from existing equipment listings**: a picker over current equipment.
+  Selecting one creates an item with `source='equipment'`, `equipment_id` set,
+  and photo URLs copied across.
 
-  After upload, POST the resulting URLs to a Route Handler that writes the
-  `survey_items` row with the service role key.
-- **Pull from existing equipment listings.** A picker over current equipment;
-  selecting one creates a `survey_items` row with `source='equipment'`,
-  `equipment_id` set, and the photo URLs copied across.
-
-  These are references to files in `equipment-images`, not copies. If a listing's
-  photos are later deleted, the survey item's images break. Acceptable for a
-  short-lived survey — but if the survey may outlive the listings, copy the files
-  into `survey-images` instead.
+  These reference files in `equipment-images`, not copies. If a listing's photos
+  are later deleted the survey item's images break. Acceptable for a short-lived
+  survey; if it may outlive the listings, copy the files into `survey-images`.
 - Edit title, reorder (`sort_order`), add an admin note
-- **Active/inactive toggle** per item — inactive disappears from the survey but
-  keeps its answers
-- **Set confirmed owner** — dropdown of `OWNER_OPTIONS` or blank. For Cory's
-  record only; never sent to respondents
+- **Active/inactive** per item — inactive disappears from the survey but keeps
+  its answers
+- **Set confirmed owner** — `OWNER_OPTIONS` or blank. Cory's record only
 - Soft delete
 
 ### Tab 3 — Results
@@ -346,79 +390,105 @@ A **Survey** section inside the existing admin, behind Supabase Auth **and** the
 The payoff. A matrix:
 
 - **Rows**: items (thumbnail + title)
-- **Columns**: one per respondent, including inactive ones — their answers still
-  count
-- **Cells**: that person's pick, with a marker when they left a note; tap or
-  hover to read it
-- **Consensus column**: the most-picked name and the split, e.g. "Doug (3 of 4)"
+- **Columns**: one per respondent, **including revoked and frozen ones** —
+  their answers still count
+- **Cells**: that person's current pick, with a marker for a note (tap to read)
+  and a distinct marker when the answer was **changed** — tap for the full
+  history with timestamps
+- **Consensus**: most-picked name and the split, e.g. "Doug (3 of 4)"
 
-  **Exclude "Not sure" from the winner calculation.** Report it separately, e.g.
-  "Doug (2 of 4, 1 unsure)". Counting it as a vote produces a nonsense consensus
-  of "Not sure" on exactly the items most needing follow-up.
+  **Exclude "Not sure" from the winner.** Report it separately —
+  "Doug (2 of 4, 1 unsure)". Counting it produces a nonsense consensus of
+  "Not sure" on exactly the items most needing follow-up.
 
-  Distinguish visually: unanimous / majority / tied or split / nobody knows /
-  unanswered. Split and nobody-knows are the ones needing a phone call.
+  Distinguish visually: unanimous / majority / tied / nobody knows /
+  unanswered. Tied and nobody-knows are the ones needing a phone call.
 - **Confirmed owner**: editable inline
-- Filters: unanswered, disputed, unconfirmed, nobody-knows
+- Filters: unanswered, disputed, unconfirmed, nobody-knows, **changed answers**
 - **Export CSV**
 
-CSV requirements: one row per item; a column per respondent for their answer and
-another for their note; consensus; confirmed owner. Quote every field and escape
-embedded quotes — notes will contain commas and line breaks. Include a UTF-8 BOM
-so Excel doesn't mangle it.
+The matrix will be wide. Let it scroll horizontally inside its own container;
+the page must not scroll sideways.
 
-The CSV matters more than the website. This data should outlive both.
+**CSV requirements:** one row per item; per respondent, a column for their
+current answer and one for their note; consensus; confirmed owner; a flag for
+any changed answer. Quote every field and escape embedded quotes — notes will
+contain commas and line breaks. Include a UTF-8 BOM so Excel doesn't mangle it.
+
+A **second CSV — full history** — one row per answer ever given, with
+respondent, item, owner, note, timestamp, and IP. This is the audit trail. If
+the record is ever questioned, this is the file that answers it.
 
 ---
 
 ## Non-goals
 
 - Respondents cannot add items or see each other's answers
-- No email or SMS sending
-- No password reset — Cory manages identifiers by hand
-- No public visibility: `/survey` is unlinked from navigation and disallowed in
-  `app/robots.js`
+- No email or SMS sending — Cory texts each link himself
+- No public visibility: `/survey` is unlinked and disallowed in `app/robots.js`
+- No password reset — there are no passwords
 
 ---
 
 ## Acceptance checklist
 
 **Access**
-- [ ] A respondent on the allowlist signs in with phone or email in any common
-      format: `5551234567`, `(555) 123-4567`, `+1 555-123-4567`
-- [ ] Someone not on the list cannot sign in, and the message is identical for
-      "not found" and "deactivated"
-- [ ] Deactivating a respondent locks them out on their very next request, with
-      no sign-out required
-- [ ] Eleven rapid failed logins from one IP returns 429
-- [ ] Hitting `/survey/items` with no cookie redirects, and the survey markup is
-      absent from the response body
-- [ ] A tampered cookie value is rejected
+- [ ] A valid token link opens the confirmation screen showing the right name
+- [ ] An invalid, revoked, or made-up token shows the same neutral message
+- [ ] Revoking locks the person out on their very next request
+- [ ] Regenerating a link kills the old one immediately and keeps answers
+- [ ] A frozen respondent can view but not change anything
+- [ ] `/survey/[token]/items` with a bad token contains **no survey markup** in
+      the response body
 
 **Survey**
 - [ ] Answers save automatically and survive closing and reopening the browser
 - [ ] A note typed and then closed without blurring is still saved
-- [ ] Tapping several radios quickly leaves the last tap as the stored answer
+- [ ] Tapping several radios quickly leaves the last tap as the current answer
 - [ ] A failed save shows a retry, not silence
-- [ ] The `/api/survey/items` payload contains no other respondent's answers and
+- [ ] The payload contains no other respondent's answers, no `admin_note`, and
       no `confirmed_owner`
 - [ ] Usable one-handed on a phone
 
+**Integrity**
+- [ ] Changing an answer creates a **second row**; the first still exists
+- [ ] The Results matrix marks changed answers and shows the history
+- [ ] The history CSV contains every answer ever given, with timestamps
+- [ ] Opening a link from a second device increments the Devices count
+
 **Admin**
-- [ ] A logged-in Supabase user whose id is not in `ADMIN_USER_IDS` gets 403
-      from every survey admin route
+- [ ] A logged-in Supabase user **not** in `survey_admins` cannot read or write
+      any survey table — verified against the live database, not just the UI
 - [ ] Four photos from an iPhone upload successfully in one go
-- [ ] An existing equipment listing pulls into the survey with its photos
+- [ ] An existing equipment listing pulls in with its photos
 - [ ] Deactivating an item removes it from the survey without deleting answers
 - [ ] Consensus excludes "Not sure" from the winner and reports it separately
-- [ ] An item where everyone answered "Not sure" is visually distinct from one
-      nobody has answered
+- [ ] An item everyone answered "Not sure" looks different from an unanswered one
+- [ ] Bulk-revoking three selected people works from a phone
 - [ ] CSV opens cleanly in Excel with notes containing commas and line breaks
-      intact
 
 **Safety**
-- [ ] All four survey tables are unreadable with the public anon key
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` and `SURVEY_SESSION_SECRET` appear nowhere in
-      the client bundle (grep the build output)
+- [ ] All five survey tables are unreadable with the public anon key
+- [ ] The four `SECURITY DEFINER` functions are the only anon-executable path
+- [ ] **No new environment variables exist.** `grep -r "SERVICE_ROLE\|SESSION_SECRET" web/` returns nothing
 - [ ] `/survey` is noindex and disallowed in robots.txt
-- [ ] Existing public equipment pages and admin are unchanged
+- [ ] Existing public pages and admin are unchanged
+
+---
+
+## Changes from v1
+
+| v1 | v2 | Why |
+|---|---|---|
+| Email/phone allowlist sign-in | Per-person token links | Family already know each other's phone numbers — the allowlist credential is one the adversary has by default |
+| Service role key in route handlers | `SECURITY DEFINER` functions + RLS | Removes the highest-consequence secret from a public repo |
+| HMAC session cookie + secret | The token is the credential | Nothing to sign, nothing to leak, no edge-runtime crypto problem |
+| `ADMIN_USER_IDS` env var | `survey_admins` table | Enforced by the database, not by remembering to check |
+| Login rate-limit table | Dropped | No login to brute-force; a 32-char token isn't guessable |
+| Phone/email normalization | Dropped | v1 called this the most likely source of "it says I'm not on the list" — it can no longer happen |
+| Answers upserted | Append-only history + view | A changed answer must be visible, not silent |
+| — | Access log | Forwarding becomes detectable before answers are corrupted |
+| — | Freeze respondent | Lock a completed set of answers |
+| — | Confirmation screen | An honest person given a forwarded link stops |
+| `photos: [{url, order}]` | `[{url, is_main, sort_order}]` | Matches `equipment` and `updates`, so `lib/photos.js` works unchanged |
+| "four survey tables" | Five, all covered | v1's blanket RLS statement missed the rate-limit table |
