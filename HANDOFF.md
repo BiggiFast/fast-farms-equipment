@@ -1,6 +1,6 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-02**
+**Last updated: 2026-09-03**
 **Branch: `nextjs-rebuild` (not `main`)**
 
 Start here. This is the living "where are we" document.
@@ -50,6 +50,20 @@ Being rebuilt in **Next.js 16**, in `web/`, alongside the old static site.
 - Verified working locally: 5 equipment pages render with their own titles and
   Product structured data carrying the price
 
+**Design ported** — 2026-09-03
+- The Next.js app now looks like the current site: full-viewport hero with its
+  gradient overlay, transparent header over it, solid header elsewhere, the
+  three-font system (EB Garamond / Bebas Neue / Montserrat), warm palette,
+  category pills, footer
+- Written as semantic classes in `app/globals.css`, not Tailwind utilities, so
+  swapping in the new design later is one file
+- Fonts self-hosted via `next/font` rather than fetched from Google per visit
+- The homepage feed renders only once something is published, so today it looks
+  byte-for-byte like the live site
+
+**Safety**
+- `.githooks/pre-commit` blocks secret-shaped commits. Repo is public
+
 **Cleanup**
 - Removed orphaned `public/main-index.html`, `public/main-about.html`
 - `main-styles.css` is **NOT** dead — it styles the live brand pages
@@ -70,63 +84,46 @@ The 1995 International Harvester 4900 Grain Truck is intentionally hidden —
 
 ---
 
-## In progress — as of 2026-09-02
+## In progress — as of 2026-09-03
 
-**Cory is designing the new layout in Claude Design**, in spurts as time allows.
-Nothing is blocked on Claude; the next coding step (the design port) waits on
-nothing but a decision to start it.
+**Waiting on Cory to read `docs/SURVEY_SPEC.md` (v2).** He'll get to it
+tomorrow. Nothing else is blocked.
 
-Separately, he's specced a **family equipment-ownership survey**
-(`docs/SURVEY_SPEC.md`) — an invite-only survey asking relatives who originally
-owned each machine, to capture that knowledge before it's lost. The spec was
-reviewed and is sound; three questions were resolved on 2026-09-02 (see
-`DECISIONS.md`).
+The survey spec was rewritten today after he described the real threat model:
+some family members have an incentive to avoid establishing who owned what, so
+they can later claim machinery as their own. See `DECISIONS.md` for the full
+reasoning. v1 is archived at `docs/archive/SURVEY_SPEC_v1_allowlist.md`.
+
+He is also still designing the new layout in Claude Design, in spurts.
 
 ---
 
 ## Next up — agreed plan, in this order
 
-The survey needs the site deployed, and the deploy shouldn't be tangled up with
-a new feature. So:
-
-1. **Port the existing design into the Next.js app** — carry across the hero,
-   nav, fonts (EB Garamond, Bebas Neue, Montserrat) and card styling from
-   `main-styles.css` / `styles.css`. Not a redesign; the goal is that the new
-   site looks like the current one.
-2. **Push the branch and check a Vercel preview URL.** A branch deploy, not the
-   real domain. Nothing public changes.
-3. **Cut over mrcoryfast.com** once the preview looks right. `vercel.json` needs
-   changing — it currently forces static serving of `public/`. Rollback is
+1. ~~**Port the existing design into the Next.js app**~~ **DONE 2026-09-03.**
+   The site now looks like the current one: hero, three-font system, warm
+   palette, category pills, footer. Verified in the browser by Cory.
+2. **Push the branch and check the Vercel preview.** Confirmed safe: Vercel
+   deploys production only from `main`, there are no deploy hooks, and the
+   current `vercel.json` uses the legacy `builds` array which makes Vercel skip
+   framework detection entirely — so a branch push cannot affect the live site.
+   **Note the repo is PUBLIC.**
+3. **Cut over mrcoryfast.com.** This is the `vercel.json` rewrite. Rollback is
    reverting one file.
-4. **Build the survey** per `docs/SURVEY_SPEC.md`, in stages: schema and
-   sign-in, then the survey page, then admin People/Items, then Results + CSV.
-5. **RSS feed** — what makes a self-owned feed followable. Independence from
-   platform algorithms is the point of the project; without RSS there's no way
-   to subscribe.
-6. **Google Analytics** — `G-BDKD0NT6KJ`, added once in `app/layout.js`.
+4. **Build the survey** per `docs/SURVEY_SPEC.md` v2, in stages: schema and the
+   four SECURITY DEFINER functions, then the token pages, then admin
+   People/Items, then Results + both CSV exports.
+5. **RSS feed** — what makes a self-owned feed followable.
+6. **Google Analytics** — `G-BDKD0NT6KJ`, once, in `app/layout.js`.
 7. **Apply the new design** when the wireframes are ready. Same mechanism as
-   step 1 — a swap, not a rebuild.
+   step 1 — edit `app/globals.css`, not every component.
 
-### Before the survey can be built
+### Nothing to fetch before the survey
 
-Cory needs to fetch two things:
-
-- **`SUPABASE_SERVICE_ROLE_KEY`** — Supabase dashboard, Settings → API.
-  **This key bypasses all security rules.** Never commit it, never prefix it
-  `NEXT_PUBLIC_`, never let it reach a browser.
-- **His Supabase user UUID**, for `ADMIN_USER_IDS`.
-
-`SURVEY_SESSION_SECRET` can be generated locally.
-
-### Deferred, not forgotten
-
-- **A "Sold" state for equipment.** Sold items are currently just hidden. A
-  real sold flag would keep the page up marked SOLD rather than 404ing — better
-  for buyer trust and for anyone who saved the link.
-- **Screenshots in `public/images/` and `Images/IMG_2651 e1.jpg`** are untracked
-  and unsorted. Nobody has decided whether they're site assets or working files.
-
----
+Earlier this file said Cory needed a `SUPABASE_SERVICE_ROLE_KEY` and his
+Supabase user UUID. **The service role key is no longer needed** — v2 designs it
+out entirely. The only manual step is seeding `survey_admins` with his user id,
+which is a one-line SQL insert we can generate at build time.
 
 ## Needs Cory, not code
 
@@ -177,6 +174,11 @@ deindexed.
 **`proxy.js`, not `middleware.js`.** Next 16 renamed the convention. This file
 guards `/admin`; if you touch it, re-verify that a signed-out request to
 `/admin` still 307s to `/admin/login`.
+
+**Commits are scanned for secrets.** `.githooks/pre-commit` blocks anything
+secret-shaped — env files, JWTs, PEM keys, `*_SECRET` with a real value. Enabled
+with `git config core.hooksPath .githooks`; re-run that after a fresh clone.
+The repo is **public**, so a leaked key can't be un-leaked by rotating it.
 
 **The admin is light-only by design.** `globals.css` has no
 `prefers-color-scheme` block. The starter's dark override was removed because

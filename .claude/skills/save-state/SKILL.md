@@ -115,6 +115,9 @@ few.
 
 ## Notes
 
+- **This skill only loads at session start.** If it was created or renamed
+  during the current session, the Skill tool will report it unknown — just
+  follow the six steps directly. It will be available next session.
 - Cory is learning web development. Explain jargon plainly in the report-back
   and don't assume shorthand lands.
 - If something is genuinely unresolved, write it down as unresolved. Do not

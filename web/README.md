@@ -54,12 +54,24 @@ proxy.js                 Protects /admin and keeps the session alive
 
 ## Design status
 
-**The visual design is not done.** Cory is working on it in Claude Design as of
-August 2026. Everything here is deliberately plain — semantic markup with
-minimal Tailwind, structured so styling can be dropped on without rewriting
-the logic.
+**The current site's design has been ported** (2026-09-03), so this app looks
+like mrcoryfast.com does today. Cory is separately designing a new layout in
+Claude Design; when it's ready it replaces what's in `app/globals.css`.
 
-Colours come from `app/globals.css` and are carried over from the old site's
+Public pages use **semantic CSS classes**, not Tailwind utilities —
+`.site-header`, `.hero`, `.equipment-card`, `.feed-item`. That keeps them close
+to the original stylesheet and means the redesign is one file rather than every
+component. Tailwind is still loaded and still styles the **admin**, which is a
+tool and doesn't need the site's visual language.
+
+Fonts are self-hosted through `next/font` (EB Garamond, Bebas Neue, Montserrat)
+and exposed as `--font-eb-garamond`, `--font-bebas`, `--font-montserrat`.
+
+The header has two variants, chosen by pathname in `components/SiteHeader.jsx`:
+`overlay` (transparent, over the full-screen hero — home only) and `solid`
+(in the flow, dark text — everywhere else).
+
+Colours come from `app/globals.css`, carried over from the old site's
 `main-styles.css` — Cory's own palette, described there as *"Oregon farm in
 spring — warm, natural, grounded"*:
 
@@ -101,7 +113,8 @@ field is focused, which makes every form feel broken on a phone.
 
 ## Not built yet
 
-- **The visual design** — the main remaining work
+- **The ownership survey** — see `../docs/SURVEY_SPEC.md` (v2). Introduces no
+  new secrets: token links plus RLS, no service role key
 - **RSS feed** — important: it's what makes a self-owned feed followable, and
   independence from platform algorithms is the whole point of the project
 - **Google Analytics** — the old site's `G-BDKD0NT6KJ` tag needs adding once,
