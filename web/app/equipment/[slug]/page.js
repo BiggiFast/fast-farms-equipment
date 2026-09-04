@@ -78,50 +78,44 @@ export default async function EquipmentItemPage({ params }) {
   }
 
   return (
-    <article>
+    <div className="container">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Link href="/equipment" className="text-sm underline">
+      <Link href="/equipment" className="back-link">
         &larr; All equipment
       </Link>
 
-      <h1 className="text-2xl font-semibold mt-4">{item.name}</h1>
-      <p className="text-lg mt-1">{formatPrice(item.price)}</p>
-      {item.category && (
-        <p className="text-xs uppercase tracking-wide opacity-70 mt-1">
-          {item.category}
-        </p>
-      )}
-
-      {photos.length > 0 && (
-        <div className="mt-6 space-y-4">
+      <article className="listing">
+        <div className="gallery">
           {photos.map((url, i) => (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               key={url}
               src={url}
               alt={`${item.name} — photo ${i + 1}`}
-              className="w-full rounded"
+              loading={i === 0 ? 'eager' : 'lazy'}
             />
           ))}
         </div>
-      )}
 
-      {item.description && (
-        <p className="mt-6 whitespace-pre-wrap">{item.description}</p>
-      )}
+        <div className="details">
+          {item.category && (
+            <span className="equipment-tag">{item.category}</span>
+          )}
+          <h1>{item.name}</h1>
+          <div className="price">{formatPrice(item.price)}</div>
+          {item.description && (
+            <p style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p>
+          )}
+        </div>
+      </article>
 
-      <section className="mt-10 border-t pt-6 text-sm opacity-80">
-        <p>
-          This was my dad&apos;s.{' '}
-          <Link href="/doug" className="underline">
-            About Doug
-          </Link>
-        </p>
-      </section>
-    </article>
+      <p className="note">
+        This was my dad&apos;s. <Link href="/doug">About Doug</Link>
+      </p>
+    </div>
   )
 }

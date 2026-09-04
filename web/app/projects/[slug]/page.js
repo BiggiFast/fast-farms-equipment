@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getProject } from '@/lib/queries'
 import { mainPhoto } from '@/lib/photos'
 
 export const revalidate = 60
 
-// This is what puts the project's own title and photo on a shared link
-// or a search result, instead of the generic site title.
+// Gives a shared link this project's own title and photo, rather than the
+// generic site title.
 export async function generateMetadata({ params }) {
   const { slug } = await params
   const project = await getProject(slug)
@@ -31,41 +32,40 @@ export default async function ProjectPage({ params }) {
   const photo = mainPhoto(project)
 
   return (
-    <article>
-      <header className="mb-8">
-        <p className="text-xs uppercase tracking-wide opacity-70">
-          {project.status}
-        </p>
-        <h1 className="text-2xl font-semibold mt-1">{project.title}</h1>
-        {project.summary && <p className="mt-2 opacity-80">{project.summary}</p>}
-      </header>
+    <>
+      <section className="page-hero">
+        <span className="status-pill">{project.status}</span>
+        <h1>{project.title}</h1>
+        {project.summary && <p>{project.summary}</p>}
+      </section>
 
-      {photo && (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img src={photo} alt={project.title} className="w-full rounded mb-6" />
-      )}
+      <article className="page-content">
+        <Link href="/projects" className="back-link">
+          &larr; All projects
+        </Link>
 
-      {project.body && (
-        <div className="whitespace-pre-wrap mb-10">{project.body}</div>
-      )}
+        {photo && (
+          <div className="framed-image">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo} alt={project.title} />
+          </div>
+        )}
 
-      <h2 className="text-xl font-semibold mb-6">
-        Updates ({project.updates.length})
-      </h2>
+        {project.body && <p style={{ whiteSpace: 'pre-wrap' }}>{project.body}</p>}
 
-      {project.updates.length === 0 ? (
-        <p className="text-sm opacity-70">No updates posted yet.</p>
-      ) : (
-        <ol className="space-y-8">
-          {project.updates.map((update) => {
+        <h1 style={{ marginTop: 'var(--space-2xl)' }}>
+          Updates ({project.updates.length})
+        </h1>
+
+        {project.updates.length === 0 ? (
+          <p className="empty-state">No updates posted yet.</p>
+        ) : (
+          project.updates.map((update) => {
             const updatePhoto = mainPhoto(update)
             return (
-              <li key={update.id} className="border-b pb-6">
+              <article key={update.id} className="feed-item">
                 {update.published_at && (
-                  <time
-                    dateTime={update.published_at}
-                    className="block text-xs opacity-60"
-                  >
+                  <time dateTime={update.published_at} className="feed-date">
                     {new Date(update.published_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -73,25 +73,23 @@ export default async function ProjectPage({ params }) {
                     })}
                   </time>
                 )}
-                {update.title && (
-                  <h3 className="text-lg font-medium mt-1">{update.title}</h3>
-                )}
+                {update.title && <h2>{update.title}</h2>}
                 {updatePhoto && (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={updatePhoto}
                     alt={update.title ?? 'Update photo'}
-                    className="mt-3 w-full rounded"
+                    loading="lazy"
                   />
                 )}
                 {update.body && (
-                  <p className="mt-3 whitespace-pre-wrap">{update.body}</p>
+                  <p style={{ whiteSpace: 'pre-wrap' }}>{update.body}</p>
                 )}
-              </li>
+              </article>
             )
-          })}
-        </ol>
-      )}
-    </article>
+          })
+        )}
+      </article>
+    </>
   )
 }

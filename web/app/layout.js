@@ -1,13 +1,35 @@
-import Link from 'next/link'
+import { Bebas_Neue, EB_Garamond, Montserrat } from 'next/font/google'
+import SiteHeader from '@/components/SiteHeader'
+import SiteFooter from '@/components/SiteFooter'
 import './globals.css'
 
-// Written ONCE, applied to every page. This is the thing that replaces
-// pasting the same header, footer, and analytics tag into every .html file.
+// Self-hosted by Next rather than fetched from Google's CDN on every visit:
+// faster, and no flash of unstyled text.
+const bebas = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bebas',
+  display: 'swap',
+})
+
+const garamond = EB_Garamond({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-eb-garamond',
+  display: 'swap',
+})
+
+const montserrat = Montserrat({
+  weight: ['300', '400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  display: 'swap',
+})
+
 export const metadata = {
   metadataBase: new URL('https://mrcoryfast.com'),
   title: {
     default: 'Cory Fast',
-    // Every child page becomes "About — Cory Fast" automatically
     template: '%s — Cory Fast',
   },
   description:
@@ -18,48 +40,16 @@ export const metadata = {
   },
 }
 
-const NAV = [
-  { href: '/', label: 'Home' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/equipment', label: 'Equipment' },
-  { href: '/about', label: 'About' },
-]
-
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen flex flex-col">
-        <header className="border-b">
-          <div className="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="font-semibold tracking-wide">
-              CORY FAST
-            </Link>
-            <nav className="flex gap-4 text-sm">
-              {NAV.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-        </header>
-
-        <main className="flex-1 mx-auto w-full max-w-4xl px-4 py-8">
-          {children}
-        </main>
-
-        <footer className="border-t">
-          <div className="mx-auto max-w-4xl px-4 py-6 text-sm flex justify-between">
-            <span>&copy; {new Date().getFullYear()} Cory Fast</span>
-            <a
-              href="https://instagram.com/mrcoryfast"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram
-            </a>
-          </div>
-        </footer>
+    <html
+      lang="en"
+      className={`${bebas.variable} ${garamond.variable} ${montserrat.variable}`}
+    >
+      <body>
+        <SiteHeader />
+        <main className="site-main">{children}</main>
+        <SiteFooter />
       </body>
     </html>
   )
