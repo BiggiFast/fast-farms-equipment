@@ -6,6 +6,8 @@ the root `README.md`; for current status see `../HANDOFF.md`.
 The app sits at the repository root — Vercel builds from there. The original
 static site is preserved in `legacy/` and is **not** served.
 
+**Live since 2026-09-04.**
+
 ## Layout
 
 ```
@@ -95,6 +97,30 @@ listing deindexed.
 **Inputs are 16px everywhere.** Below that, iOS Safari zooms the page when a
 field is focused, which makes every form feel broken on a phone.
 
+## Routing notes
+
+`next.config.mjs` redirects every URL the old static site used — `/about.html`,
+`/doug.html`, `/equipment/index.html`, `/equipment/contact.html`,
+`/equipment/admin.html` — because people have them bookmarked and Google has
+them indexed. 308 for moved pages so ranking transfers.
+
+`/reset-password.html` is 307, not 308: it's a functional endpoint that Supabase
+recovery emails point at, and a permanently cached redirect there would be hard
+to undo.
+
+## The admin has no site chrome
+
+`SiteHeader` and `SiteFooter` return `null` on `/admin`. It's a tool, not part
+of the site, and the two sets of navigation collided. The admin layout sizes
+itself — do **not** reintroduce negative margins to break out of a parent
+container, which is how it previously broke.
+
+## Analytics is not loaded everywhere
+
+`components/Analytics.jsx` skips `/admin` and `/survey`. The survey exclusion
+matters: GA reports the page path, and survey URLs contain a respondent's
+private token.
+
 ## Not built yet
 
 - **The ownership survey** — see `SURVEY_SPEC.md` (v2). Introduces no
@@ -103,5 +129,5 @@ field is focused, which makes every form feel broken on a phone.
   independence from platform algorithms is the whole point of the project
 - **Google Analytics** — the old site's `G-BDKD0NT6KJ` tag needs adding once,
   in `app/layout.js`
-- **Deploy / cutover** — merging `nextjs-rebuild` into `main` is the cutover.
-  The old `vercel.json` has been deleted so Vercel auto-detects Next.js
+- **The new visual design**, when Cory's wireframes are ready — edit
+  `app/globals.css`, not every component

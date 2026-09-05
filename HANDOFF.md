@@ -1,7 +1,7 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-04**
-**Branch: `nextjs-rebuild` (not `main`)**
+**Last updated: 2026-09-04 — SITE IS LIVE**
+**Branch: `main` — the rebuild is merged and deployed**
 
 Start here. This is the living "where are we" document.
 
@@ -26,12 +26,17 @@ The **equipment sale stays** as a section people can still use. It's Doug's
 equipment — Cory's father, who died in December 2024 — and the sale is being
 handled for Cory's mom.
 
-Rebuilt in **Next.js 16**, now at the **repository root**. The original static
-site is preserved in `legacy/` and is not served.
+Rebuilt in **Next.js 16**, at the **repository root**. The original static site
+is preserved in `legacy/` and is not served.
 
-> **mrcoryfast.com still serves the old site**, because Vercel deploys
-> production from `main` and `main` has not been touched. The rebuild lives on
-> branch `nextjs-rebuild`. **Merging that branch into `main` IS the cutover.**
+> ## ✅ Launched 2026-09-04
+>
+> **mrcoryfast.com now serves the Next.js site.** The cutover was merging
+> `nextjs-rebuild` into `main`, which removed `vercel.json` and let Vercel run
+> the Next.js build.
+>
+> **Rollback**, if ever needed: `git revert -m 1 3885684 && git push`. That
+> restores `vercel.json` and the old static site within a couple of minutes.
 
 ---
 
@@ -86,47 +91,58 @@ The 1995 International Harvester 4900 Grain Truck is intentionally hidden —
 
 ---
 
-## In progress — as of 2026-09-03
+## What shipped 2026-09-04
 
-**Waiting on Cory to read `docs/SURVEY_SPEC.md` (v2).** He'll get to it
-tomorrow. Nothing else is blocked.
+Steps 1-6 of the plan are done.
 
-The survey spec was rewritten today after he described the real threat model:
-some family members have an incentive to avoid establishing who owned what, so
-they can later claim machinery as their own. See `DECISIONS.md` for the full
-reasoning. v1 is archived at `docs/archive/SURVEY_SPEC_v1_allowlist.md`.
+- **Design ported** — the site looks as it did before, so nobody arrived to
+  find a renovation in progress
+- **Deployed** — via a Vercel preview first, then merged to `main`
+- **Per-machine equipment pages**, server rendered with their own titles,
+  descriptions, share images and `Product` structured data carrying the price.
+  Verified live: `/equipment/2014-case-ih-magnum-380-tractor` returns a real
+  title and `"price":183000` in the crawlable HTML
+- **Google Analytics** (`G-BDKD0NT6KJ`) — written once in the layout, and
+  deliberately excluded from `/admin` and `/survey`
+- **Old URLs redirect** — `/about.html`, `/doug.html`, `/equipment/*.html`,
+  `/reset-password.html`
+- **Contact and password reset restored** — see below
 
-He is also still designing the new layout in Claude Design, in spurts.
+### Two near-misses worth remembering
+
+Checking the post-launch 404s turned up two things the cutover had silently
+dropped:
+
+1. **The contact page.** It carried the phone number, 503-383-9702, and was the
+   only way a buyer could reach Cory. Rebuilt at `/contact`, added to the nav,
+   and the number now also appears on the listings page and on every individual
+   machine page. This one would have cost real sales, invisibly.
+2. **The password reset page.** Supabase recovery emails link to
+   `/reset-password.html`. A forgotten admin password would have meant a dead
+   link and no way back in.
+
+Neither would have surfaced until it bit.
 
 ---
 
-## Next up — agreed plan, in this order
+## Next up
 
-1. ~~**Port the existing design into the Next.js app**~~ **DONE 2026-09-03.**
-   The site now looks like the current one: hero, three-font system, warm
-   palette, category pills, footer. Verified in the browser by Cory.
-2. ~~**Push the branch**~~ **DONE 2026-09-04.** The first push built a preview
-   of the *old* site, because `vercel.json`'s legacy `builds` array told Vercel
-   to serve `public/` statically and skip framework detection — and the app was
-   in `web/` anyway, not where Vercel looks. **Fixed by restructuring:** the
-   Next app moved to the repo root, the old site to `legacy/`, and `vercel.json`
-   was deleted so Vercel auto-detects Next.js.
-3. **Cut over mrcoryfast.com** by merging `nextjs-rebuild` into `main`.
-   Rollback is `git revert` of the merge.
-4. **Build the survey** per `docs/SURVEY_SPEC.md` v2, in stages: schema and the
-   four SECURITY DEFINER functions, then the token pages, then admin
-   People/Items, then Results + both CSV exports.
-5. **RSS feed** — what makes a self-owned feed followable.
-6. **Google Analytics** — `G-BDKD0NT6KJ`, once, in `app/layout.js`.
-7. **Apply the new design** when the wireframes are ready. Same mechanism as
-   step 1 — edit `app/globals.css`, not every component.
+1. **Build the survey** per `docs/SURVEY_SPEC.md` v2, in stages: schema and the
+   four `SECURITY DEFINER` functions, then the token pages, then admin
+   People/Items, then Results + both CSV exports. Nothing is blocking it.
+2. **RSS feed** — what makes a self-owned feed followable. Independence from
+   platform algorithms is the point of the project.
+3. **Apply the new design** when Cory's wireframes are ready. Edit
+   `app/globals.css`, not every component.
 
-### Nothing to fetch before the survey
+### Smaller, when convenient
 
-Earlier this file said Cory needed a `SUPABASE_SERVICE_ROLE_KEY` and his
-Supabase user UUID. **The service role key is no longer needed** — v2 designs it
-out entirely. The only manual step is seeding `survey_admins` with his user id,
-which is a one-line SQL insert we can generate at build time.
+- **The admin's layout** is functional but plain. Cory: *"something that we can
+  work on as we go."* Not blocking.
+- **A `sold` state for equipment**, so sold machines show as SOLD rather than
+  disappearing. The grain truck is currently just hidden.
+- **`legacy/`** can be deleted whenever it stops being a useful reference —
+  it's in git history regardless.
 
 ## Needs Cory, not code
 
@@ -154,8 +170,18 @@ npm run dev
 ## Gotchas worth knowing
 
 **The domain redirects to www.** `mrcoryfast.com` → `www.mrcoryfast.com`.
-`metadataBase` in `app/layout.js` is set to the non-www form, which affects the
-absolute URLs in share cards. Worth aligning at or before cutover.
+`metadataBase` in `app/layout.js` points at the www form to match. Don't change
+it back — share cards and canonical URLs would then all carry a redirect.
+
+**Vercel's Framework Preset must stay Next.js.** It was set to Express, auto
+detected in December from the old root `package.json`. It didn't matter while
+`vercel.json` existed, because a `builds` array overrides project settings
+entirely — which is exactly why the first preview silently built the old site.
+
+**Negative margins couple a component to its parent.** The admin used
+`-mx-4 -my-8` to break out of a container that had padding. Porting the site
+design removed that padding, and the admin was thrown against the window edge
+with no error. Layout components should size themselves.
 
 **Preview deployments are protected.** Vercel requires you to be signed in to
 open a preview URL. Good — nobody stumbles onto the new site early — but it
@@ -199,9 +225,9 @@ the site rendered dark on a dark-mode Mac.
 
 ## Branch and repo
 
-- Working branch: **`nextjs-rebuild`** — nothing pushed to GitHub yet
-- `main` is untouched and is what Vercel deploys
+- **`main` is live.** `nextjs-rebuild` is merged and can be deleted
+- Vercel deploys production from `main` via the GitHub integration
 - Remote: github.com/BiggiFast/fast-farms-equipment
 
-If `web/` seems to vanish, you're on `main`. `git checkout nextjs-rebuild`
-brings it back.
+The Next app is at the repository root. `legacy/` holds the original static
+site and is not served.

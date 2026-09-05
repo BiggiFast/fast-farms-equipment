@@ -9,6 +9,73 @@ an accident.
 
 ---
 
+## 2026-09-04 — Launched, and the four layers that had to be peeled back first
+
+**Decided:** Cut over by merging `nextjs-rebuild` into `main`, which deletes
+`vercel.json` and lets Vercel run the Next.js build.
+
+**Why it took four attempts to get a working preview.** Each layer only became
+visible once the previous one was fixed:
+
+1. `vercel.json`'s legacy `builds` array made Vercel skip framework detection
+   and serve `legacy/public/` statically. The first preview was the *old* site;
+   Cory spotted it because the per-machine equipment pages were missing.
+2. The app lived in `web/`, while Vercel builds from the repo root. Fixed by
+   moving the app to the root and the old site to `legacy/`.
+3. The Vercel project had no `NEXT_PUBLIC_SUPABASE_*` environment variables —
+   the old static site hardcoded them.
+4. The Framework Preset was **Express**, auto-detected in December from the old
+   root `package.json`. Harmless while `vercel.json` existed; decisive once it
+   was gone.
+
+**A real bug found along the way.** The build failure in (3) should have been
+survivable — `safeList` exists so a database problem can't break a deploy. But
+`createPublicClient()` was called one line *above* the try/catch meant to
+protect it, so every list query threw straight past its own safety net.
+Fixed, with a comment saying why it must not be hoisted back out.
+
+**Two regressions caught after launch**, both worse than the 404s that led to
+them: the contact page (the phone number was a buyer's only way to reach Cory)
+and the password reset page (Supabase recovery emails link to it; losing it
+meant a lockout with no way back). Both rebuilt, and the phone number now
+appears on the listings page and every machine page rather than only on a
+contact page someone has to find.
+
+---
+
+## 2026-09-04 — Analytics excluded from /admin and /survey
+
+**Decided:** `components/Analytics.jsx` skips any path starting with `/admin`
+or `/survey`.
+
+**Why:** `/admin` is a private tool used by one person; measuring it only adds
+noise. `/survey` matters more — Google Analytics reports the current page path,
+and survey URLs will contain a respondent's private token. Loading GA there
+would send a live credential to Google on every page view, the same leak the
+spec already guards against for the `Referer` header. Recorded in the spec so
+the exclusion isn't removed by someone who doesn't know why it exists.
+
+---
+
+## 2026-09-04 — Layout components size themselves; no breaking out with negative margins
+
+**Decided:** The admin layout owns its own container and padding.
+
+**Why:** It previously used `-mx-4 -my-8` to break out of a parent that had
+`px-4 py-8`. Porting the site design replaced that parent with a bare flex
+column, and the admin was thrown 16px past the left edge of the window with
+"Sign out" cut off — no error, nothing in the build output. Cory found it by
+looking at the page.
+
+A component positioned by negative margins is silently coupled to its parent's
+padding and breaks without warning when that changes.
+
+**Also:** the public site header and footer no longer render on `/admin`. The
+admin is a tool, not part of the site, and stacking the two sets of chrome was
+what collided.
+
+---
+
 ## 2026-09-04 — Survey spec hardened after a second security pass
 
 **Decided:** Added three requirements to `docs/SURVEY_SPEC.md` after Cory asked
