@@ -168,6 +168,12 @@ page, the browser may send the full URL — token included — to that site as t
 **Acceptance:** a survey page's rendered HTML contains no `http` link to another
 origin, and the response carries a `no-referrer` policy.
 
+**Google Analytics is already excluded from `/survey`.** `components/Analytics.jsx`
+skips any path starting with `/admin` or `/survey`. This matters for the same
+reason as the Referer header: GA reports the current page path, and a survey URL
+*is* a credential. Loading it there would send a live token to Google on every
+page view. Do not remove that exclusion.
+
 ### Supabase auth settings — VERIFIED 2026-09-04
 
 Admin access is granted to the `authenticated` role, narrowed by

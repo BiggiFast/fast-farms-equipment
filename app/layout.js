@@ -1,4 +1,5 @@
 import { Bebas_Neue, EB_Garamond, Montserrat } from 'next/font/google'
+import Analytics from '@/components/Analytics'
 import SiteHeader from '@/components/SiteHeader'
 import SiteFooter from '@/components/SiteFooter'
 import './globals.css'
@@ -52,6 +53,7 @@ export default function RootLayout({ children }) {
       className={`${bebas.variable} ${garamond.variable} ${montserrat.variable}`}
     >
       <body>
+        <Analytics />
         <SiteHeader />
         <main className="site-main">{children}</main>
         <SiteFooter />
