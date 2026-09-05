@@ -9,10 +9,11 @@
 > and is pivoting from an equipment-sales site to a **creator site** — a feed
 > of projects, with equipment kept as one section.
 >
-> **This document describes the original static site in `public/`, which is
-> still what mrcoryfast.com serves.** It remains accurate for that site.
-> For current status, open **`HANDOFF.md`**. For the new app, see
-> **`web/README.md`**.
+> **This document describes the original static site**, now preserved in
+> `legacy/`. It remains accurate for that site. As of 2026-09-04 the Next.js
+> app has moved to the repository root and is what deploys.
+> For current status, open **`HANDOFF.md`**. For the app, see
+> **`docs/APP_NOTES.md`**.
 
 ---
 

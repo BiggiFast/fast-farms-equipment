@@ -29,12 +29,13 @@ Commit anything uncommitted, in logical chunks with real messages explaining
 *why* (see the existing log for the standard — they explain reasoning, not just
 what changed).
 
-- Never commit `.env.local`, `SUPABASE_SERVICE_ROLE_KEY`, or `SURVEY_SESSION_SECRET`.
-  Verify with `git ls-files | grep -i env`.
+- Never commit `.env.local` or any real credential. Verify with
+  `git ls-files | grep -i env`. The pre-commit hook in `.githooks/` also
+  blocks this, but check anyway — the repo is public.
 - If the work is half-finished, commit it anyway and label it clearly as
   in-progress. An uncommitted tree is the single biggest loss risk.
-- Leave the six loose images in `public/images/` and `Images/` alone unless Cory
-  has said what they are.
+- Loose macOS screenshots are gitignored (`Screenshot*.png`). Leave `Images/`
+  alone unless Cory has said what it is.
 
 ## 2. Update `HANDOFF.md`
 
@@ -63,7 +64,7 @@ a new entry saying so and referencing the old one.
 If Cory pushed back and changed the plan, that belongs here — including that it
 was his call.
 
-## 4. Update `web/README.md` if the app's architecture changed
+## 4. Update `docs/APP_NOTES.md` if the app's architecture changed
 
 Only for structural change: new folders, new routes, a new convention, a
 decision worth not undoing. Not for routine edits.
@@ -104,7 +105,7 @@ Keep it short. He's stopping, not starting.
 | `docs/PROJECT_SUMMARY.md` | The original static site | Rarely — mostly frozen |
 | `docs/*` | Reference: admin setup, security | Rarely |
 | `docs/archive/*` | Finished history | Never |
-| `web/README.md` | How the Next.js app works | On architectural change |
+| `docs/APP_NOTES.md` | How the Next.js app works | On architectural change |
 | Memory | Cross-session facts about Cory and direction | When durable facts change |
 
 If a new document seems necessary, first check whether it belongs in one of

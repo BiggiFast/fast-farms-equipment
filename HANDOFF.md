@@ -1,12 +1,12 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-03**
+**Last updated: 2026-09-04**
 **Branch: `nextjs-rebuild` (not `main`)**
 
 Start here. This is the living "where are we" document.
 
 - **Why** something is the way it is → `DECISIONS.md`
-- How the new app works → `web/README.md`
+- How the app works → `docs/APP_NOTES.md`
 - The survey requirements → `docs/SURVEY_SPEC.md`
 - The original static site → `docs/PROJECT_SUMMARY.md`
 
@@ -26,10 +26,12 @@ The **equipment sale stays** as a section people can still use. It's Doug's
 equipment — Cory's father, who died in December 2024 — and the sale is being
 handled for Cory's mom.
 
-Being rebuilt in **Next.js 16**, in `web/`, alongside the old static site.
+Rebuilt in **Next.js 16**, now at the **repository root**. The original static
+site is preserved in `legacy/` and is not served.
 
-> **The old site in `public/` is still what mrcoryfast.com serves.
-> Nothing new is live. No deploy has happened.**
+> **mrcoryfast.com still serves the old site**, because Vercel deploys
+> production from `main` and `main` has not been touched. The rebuild lives on
+> branch `nextjs-rebuild`. **Merging that branch into `main` IS the cutover.**
 
 ---
 
@@ -103,13 +105,14 @@ He is also still designing the new layout in Claude Design, in spurts.
 1. ~~**Port the existing design into the Next.js app**~~ **DONE 2026-09-03.**
    The site now looks like the current one: hero, three-font system, warm
    palette, category pills, footer. Verified in the browser by Cory.
-2. **Push the branch and check the Vercel preview.** Confirmed safe: Vercel
-   deploys production only from `main`, there are no deploy hooks, and the
-   current `vercel.json` uses the legacy `builds` array which makes Vercel skip
-   framework detection entirely — so a branch push cannot affect the live site.
-   **Note the repo is PUBLIC.**
-3. **Cut over mrcoryfast.com.** This is the `vercel.json` rewrite. Rollback is
-   reverting one file.
+2. ~~**Push the branch**~~ **DONE 2026-09-04.** The first push built a preview
+   of the *old* site, because `vercel.json`'s legacy `builds` array told Vercel
+   to serve `public/` statically and skip framework detection — and the app was
+   in `web/` anyway, not where Vercel looks. **Fixed by restructuring:** the
+   Next app moved to the repo root, the old site to `legacy/`, and `vercel.json`
+   was deleted so Vercel auto-detects Next.js.
+3. **Cut over mrcoryfast.com** by merging `nextjs-rebuild` into `main`.
+   Rollback is `git revert` of the merge.
 4. **Build the survey** per `docs/SURVEY_SPEC.md` v2, in stages: schema and the
    four SECURITY DEFINER functions, then the token pages, then admin
    People/Items, then Results + both CSV exports.
@@ -138,7 +141,7 @@ which is a one-line SQL insert we can generate at build time.
 ## How to run it
 
 ```bash
-cd web
+npm install
 npm run dev
 ```
 
@@ -149,6 +152,14 @@ npm run dev
 ---
 
 ## Gotchas worth knowing
+
+**The domain redirects to www.** `mrcoryfast.com` → `www.mrcoryfast.com`.
+`metadataBase` in `app/layout.js` is set to the non-www form, which affects the
+absolute URLs in share cards. Worth aligning at or before cutover.
+
+**Preview deployments are protected.** Vercel requires you to be signed in to
+open a preview URL. Good — nobody stumbles onto the new site early — but it
+means automated checks against a preview URL get an SSO redirect, not the page.
 
 **npm cache is broken on this machine.** `~/.npm` contains root-owned files from
 an old npm bug; npm fails with `EACCES`. Permanent fix, run once:

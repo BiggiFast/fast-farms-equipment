@@ -1,26 +1,10 @@
-# MrCoryFast.com — Next.js rebuild
+# App notes
 
-The new site. The old static site still lives in `../public/` and is still what
-mrcoryfast.com serves. **Nothing here is live yet.**
+How the Next.js app works. For how to run it and where everything lives, see
+the root `README.md`; for current status see `../HANDOFF.md`.
 
-See `../HANDOFF.md` for overall project status.
-
-## Run it
-
-```bash
-cd web
-npm run dev
-```
-
-- Site: http://localhost:3000
-- Admin: http://localhost:3000/admin (sign in with Supabase email + password)
-- **From your phone**: use the `Network:` URL Next prints on startup, on the
-  same wifi. Worth doing — the admin was built for phone use.
-
-> **npm cache note:** this machine has root-owned files in `~/.npm` from an old
-> npm bug. If npm fails with `EACCES`, either run
-> `sudo chown -R 501:20 "$HOME/.npm"` once to fix it permanently, or prefix
-> commands with `npm_config_cache=/tmp/npm-cache`.
+The app sits at the repository root — Vercel builds from there. The original
+static site is preserved in `legacy/` and is **not** served.
 
 ## Layout
 
@@ -113,11 +97,11 @@ field is focused, which makes every form feel broken on a phone.
 
 ## Not built yet
 
-- **The ownership survey** — see `../docs/SURVEY_SPEC.md` (v2). Introduces no
+- **The ownership survey** — see `SURVEY_SPEC.md` (v2). Introduces no
   new secrets: token links plus RLS, no service role key
 - **RSS feed** — important: it's what makes a self-owned feed followable, and
   independence from platform algorithms is the whole point of the project
 - **Google Analytics** — the old site's `G-BDKD0NT6KJ` tag needs adding once,
   in `app/layout.js`
-- **Deploy / cutover** — `../vercel.json` currently forces static serving of
-  `public/`, so it needs changing before this app can go live
+- **Deploy / cutover** — merging `nextjs-rebuild` into `main` is the cutover.
+  The old `vercel.json` has been deleted so Vercel auto-detects Next.js

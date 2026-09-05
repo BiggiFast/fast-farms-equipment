@@ -1,41 +1,55 @@
-# Dependencies
-node_modules/
+# ---------------------------------------------------------------- Next.js ---
+/node_modules
+/.pnp
+.pnp.*
+/.next/
+/out/
+/build
+/coverage
+*.tsbuildinfo
+next-env.d.ts
 
-# Environment variables
-.env
-.env.local
+# --------------------------------------------------------------- Secrets ----
+# .env.local holds the Supabase keys. This repo is PUBLIC — see .githooks/
+.env*
+!.env.example
 
-# Development tools
+# ---------------------------------------------------------------- Vercel ----
+.vercel
+
+# ---------------------------------------------------------------- Editors ---
 .cursor/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-npm-debug.log*
-
-# Temporary files
-*.tmp
-*.temp
-
-# Screenshots and images used for documentation
-screenshots/
-
-# Ignore PNG files except in public/images (site assets)
-*.PNG
-*.png
-!public/images/*.png
-
-# Editor directories
 .vscode/
 .idea/
 
+# ------------------------------------------------------------------- OS -----
+.DS_Store
+Thumbs.db
+*.pem
 
+# ------------------------------------------------------------------ Logs ----
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+*.tmp
+*.temp
 
+# ------------------------------------------------------- Source photos ------
+# ~48MB of original camera files (HEIC/JPG) and full-resolution sources that
+# site assets get cropped from — including family photos of Cory's father.
+#
+# Deliberately NOT committed. This repo is PUBLIC, and git history is
+# permanent: adding them later is easy, removing them later is not.
+#
+# These are irreplaceable and the repo is NOT their backup. They should live
+# somewhere with real backup (iCloud, Time Machine, an external drive).
+/Images/
 
-
-
-
-
+# --------------------------------------------------------------- Scratch ----
+# Loose macOS screenshots. Nobody has identified these as site assets, so
+# they stay out of the repo rather than being committed by accident.
+Screenshot*.png
+Screenshot*.PNG
+/screenshots/
