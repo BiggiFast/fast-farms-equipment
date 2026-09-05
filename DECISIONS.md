@@ -32,10 +32,13 @@ that failure mode rather than mitigating it, because the key no longer exists.
    at all — including the site nav and footer, so the survey gets its own bare
    layout.
 
-**Third item, for Cory to verify:** public sign-up must be disabled in Supabase
-Auth. Admin access is granted to the `authenticated` role narrowed by
-`survey_admins`; if strangers can register, only that subquery stands between
-them and the data.
+**Third item — VERIFIED 2026-09-04.** Supabase auth is correctly locked down:
+"Allow new users to sign up" off, "Allow anonymous sign-ins" off, manual linking
+off, confirm email on, email provider on. Anonymous sign-ins turned out to
+matter as much as signups — if enabled, Supabase hands anyone a real
+`authenticated` token with no account at all, which is exactly the role the
+admin policies grant to. **If either is ever switched on, this design needs
+revisiting.**
 
 **Honest residual risk, accepted:** anyone holding a link can answer as that
 person, and URLs leak in ways passwords don't. Mitigated by revocation, the

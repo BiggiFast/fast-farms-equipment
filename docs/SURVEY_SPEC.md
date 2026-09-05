@@ -168,19 +168,33 @@ page, the browser may send the full URL — token included — to that site as t
 **Acceptance:** a survey page's rendered HTML contains no `http` link to another
 origin, and the response carries a `no-referrer` policy.
 
-### One setting to verify in Supabase
+### Supabase auth settings — VERIFIED 2026-09-04
 
 Admin access is granted to the `authenticated` role, narrowed by
 `survey_admins`. That is safe **provided strangers cannot become authenticated
 users.**
 
-Check **Authentication → Providers → Email** in the Supabase dashboard and
-confirm sign-ups are **disabled**. Cory is the only account that should exist.
-If open signup is on, anyone could register, reach the `authenticated` role, and
-then only the `survey_admins` subquery stands between them and the data — which
-is one policy typo away from a problem.
+Confirmed at **Authentication → Sign In / Providers → User Signups**:
 
-**Acceptance:** public sign-up is disabled, verified in the dashboard.
+| Setting | Required | Verified 2026-09-04 |
+|---|---|---|
+| Allow new users to sign up | **off** | off ✓ |
+| Allow anonymous sign-ins | **off** | off ✓ |
+| Allow manual linking | off | off ✓ |
+| Confirm email | on | on ✓ |
+| Enable email provider | **on** | on ✓ |
+
+Both "off" settings matter. With **signups** open, a stranger could register and
+land in the `authenticated` role. With **anonymous sign-ins** open, they
+wouldn't even need an email — Supabase would hand out a real `authenticated`
+token to anyone asking. Either way the `survey_admins` subquery becomes the only
+thing between them and the data, which is one policy typo from a problem.
+
+Leave **Enable email provider ON** — that is how Cory signs into the admin.
+Turning it off locks him out of his own site.
+
+**If these are ever changed, revisit this design.** The admin policies assume
+the `authenticated` role is reachable only by Cory.
 
 ---
 
