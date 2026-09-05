@@ -114,6 +114,9 @@ export default async function EquipmentItemPage({ params }) {
       </article>
 
       <p className="note">
+        <strong>Interested?</strong> Call{' '}
+        <a href="tel:503-383-9702">503-383-9702</a>.
+        <br />
         This was my dad&apos;s. <Link href="/doug">About Doug</Link>
       </p>
     </div>

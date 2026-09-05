@@ -19,6 +19,8 @@ export default async function EquipmentPage() {
         <p>
           These belonged to my dad, Doug.{' '}
           <Link href="/doug">Read about him here.</Link>
+          <br />
+          Questions? Call <a href="tel:503-383-9702">503-383-9702</a>.
         </p>
       </section>
 
