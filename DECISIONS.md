@@ -9,6 +9,41 @@ an accident.
 
 ---
 
+## 2026-09-04 — Survey spec hardened after a second security pass
+
+**Decided:** Added three requirements to `docs/SURVEY_SPEC.md` after Cory asked
+whether v2 really removes v1's security exposure.
+
+**What the review confirmed:** v1's worst case was total compromise of the whole
+Supabase project — the service role key ignores RLS entirely, so a leak exposed
+equipment, projects, updates and auth users, not just the survey. v2 removes
+that failure mode rather than mitigating it, because the key no longer exists.
+
+**What it also found — two real gaps in v2 as written:**
+
+1. **`SECURITY DEFINER` functions were not required to pin `search_path`.**
+   Without it, a caller can point the search path at objects they control and
+   the elevated function operates on those. Classic privilege escalation. Now
+   mandatory, along with a ban on dynamic SQL inside these functions.
+
+2. **Referrer leakage.** The token lives in the URL, so clicking any external
+   link from a survey page could send it to a third party in the `Referer`
+   header. Survey pages now emit `no-referrer` and carry no cross-origin links
+   at all — including the site nav and footer, so the survey gets its own bare
+   layout.
+
+**Third item, for Cory to verify:** public sign-up must be disabled in Supabase
+Auth. Admin access is granted to the `authenticated` role narrowed by
+`survey_admins`; if strangers can register, only that subquery stands between
+them and the data.
+
+**Honest residual risk, accepted:** anyone holding a link can answer as that
+person, and URLs leak in ways passwords don't. Mitigated by revocation, the
+access log, and the confirmation screen — not eliminated. This is the design,
+not a defect.
+
+---
+
 ## 2026-09-03 — Survey uses token links and introduces no new secrets
 
 **Decided:** Rewrote the survey spec (v2). Respondents get a private link

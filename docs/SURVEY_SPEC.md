@@ -112,6 +112,76 @@ guessing a 32-character random token is not feasible. v1's
 Put every function call behind one helper in `lib/survey.js`. Do not scatter
 `.rpc()` calls through components.
 
+
+### Hardening the SECURITY DEFINER functions
+
+These functions run with the privileges of their owner, not the caller. That is
+the whole point — but it makes them the feature's real attack surface, and they
+must be written defensively.
+
+**Every function must pin its search path:**
+
+```sql
+create function survey_answer(...)
+returns ...
+language plpgsql
+security definer
+set search_path = public, pg_temp   -- REQUIRED
+as $$ ... $$;
+```
+
+Without this, a caller can set a `search_path` pointing at objects they control,
+and the elevated function operates on those instead of the real tables. This is
+the classic `SECURITY DEFINER` privilege-escalation route.
+
+**Rules for all four functions:**
+
+- `SET search_path = public, pg_temp` — no exceptions
+- **No dynamic SQL.** No `EXECUTE format(...)` built from arguments. Injection
+  into a definer function would run as the owner
+- Validate every argument before use: token exists, respondent is active, item
+  is active and not deleted, `owner` is in `OWNER_OPTIONS`, note within length
+- Return only the caller's own rows. Never `admin_note`, never
+  `confirmed_owner`, never another respondent's answers
+- Look the token up with a constant-time-ish equality on an indexed column; do
+  not build a `LIKE` or pattern match from it
+- `REVOKE ALL ON FUNCTION ... FROM public;` then
+  `GRANT EXECUTE ... TO anon;` — grant deliberately, not by default
+- Owned by a role with rights on the survey tables and **nothing else**. Do not
+  create them as `postgres` if a narrower owner will do
+
+**Acceptance:** every function definition contains `set search_path`, and none
+contains `EXECUTE`.
+
+### Keeping the token out of the Referer header
+
+The token is in the URL. If a respondent clicks an external link from a survey
+page, the browser may send the full URL — token included — to that site as the
+`Referer`. That leaks a live credential to a third party.
+
+- Every page under `/survey` sets `referrer: 'no-referrer'` in its route
+  metadata
+- Survey pages contain **no external links**. Not the site nav, not the footer,
+  not Instagram. The survey uses a bare layout of its own
+- Any unavoidable outbound link carries `rel="noreferrer"`
+
+**Acceptance:** a survey page's rendered HTML contains no `http` link to another
+origin, and the response carries a `no-referrer` policy.
+
+### One setting to verify in Supabase
+
+Admin access is granted to the `authenticated` role, narrowed by
+`survey_admins`. That is safe **provided strangers cannot become authenticated
+users.**
+
+Check **Authentication → Providers → Email** in the Supabase dashboard and
+confirm sign-ups are **disabled**. Cory is the only account that should exist.
+If open signup is on, anyone could register, reach the `authenticated` role, and
+then only the `survey_admins` subquery stands between them and the data — which
+is one policy typo away from a problem.
+
+**Acceptance:** public sign-up is disabled, verified in the dashboard.
+
 ---
 
 ## Database schema
@@ -468,6 +538,10 @@ the record is ever questioned, this is the file that answers it.
 - [ ] CSV opens cleanly in Excel with notes containing commas and line breaks
 
 **Safety**
+- [ ] Every `SECURITY DEFINER` function pins `set search_path = public, pg_temp`
+- [ ] No survey function contains dynamic SQL (`EXECUTE`)
+- [ ] Survey pages emit a `no-referrer` policy and contain no cross-origin links
+- [ ] Public sign-up is disabled in Supabase Auth
 - [ ] All five survey tables are unreadable with the public anon key
 - [ ] The four `SECURITY DEFINER` functions are the only anon-executable path
 - [ ] **No new environment variables exist.** `grep -r "SERVICE_ROLE\|SESSION_SECRET" web/` returns nothing
