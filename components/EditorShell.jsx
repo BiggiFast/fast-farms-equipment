@@ -55,9 +55,10 @@ export default function EditorShell({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {/* Sticks to the bottom of the screen so Save is always reachable
-          without scrolling to the end of a long form on a phone. */}
-      <div className="sticky bottom-0 -mx-4 border-t bg-paper px-4 py-3 flex gap-3">
+      {/* Sticks to the bottom of the viewport so Save is always reachable
+          without scrolling to the end of a long form on a phone. No negative
+          margins — it sits inside the form's own column. */}
+      <div className="sticky bottom-0 flex gap-3 border-t bg-paper py-3">
         <button
           type="submit"
           disabled={busy}

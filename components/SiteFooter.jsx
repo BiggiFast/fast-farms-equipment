@@ -1,4 +1,11 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+
 export default function SiteFooter() {
+  const pathname = usePathname()
+  if (pathname.startsWith('/admin')) return null
+
   return (
     <footer className="site-footer">
       <p>Follow</p>

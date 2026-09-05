@@ -15,6 +15,11 @@ const NAV = [
 
 export default function SiteHeader() {
   const pathname = usePathname()
+
+  // The admin is a tool, not part of the site. It has its own chrome, and
+  // stacking the marketing header on top of it just collides.
+  if (pathname.startsWith('/admin')) return null
+
   const isHome = pathname === '/'
 
   return (

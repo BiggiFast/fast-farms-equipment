@@ -14,29 +14,45 @@ const SECTIONS = [
   { href: '/admin/equipment', label: 'Equipment' },
 ]
 
+// Self-contained: this layout does not assume anything about its parent's
+// padding. It used to break out of one with negative margins, which silently
+// stopped working when the site's CSS changed and threw the whole admin
+// against the left edge of the window.
 export default function AdminLayout({ children }) {
   return (
-    <div className="-mx-4 -my-8">
-      <div className="border-b bg-paper-warm">
-        <div className="px-4 py-3 flex items-center justify-between gap-4">
-          <span className="text-sm font-semibold">Admin</span>
-          <SignOutButton />
-        </div>
-        {/* Scrolls sideways on a narrow phone instead of wrapping into a mess */}
-        <nav className="flex gap-1 px-2 pb-2 overflow-x-auto">
-          {SECTIONS.map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="whitespace-nowrap rounded px-3 py-2 text-sm border"
-            >
-              {s.label}
+    <div className="flex min-h-screen flex-col bg-paper">
+      <header className="border-b bg-paper-warm">
+        <div className="mx-auto w-full max-w-3xl px-4 py-3 flex items-center justify-between gap-4">
+          <Link href="/admin" className="text-sm font-semibold">
+            Admin
+          </Link>
+          <div className="flex items-center gap-4 text-sm">
+            <Link href="/" className="underline">
+              View site
             </Link>
-          ))}
-        </nav>
-      </div>
+            <SignOutButton />
+          </div>
+        </div>
 
-      <div className="px-4 py-6">{children}</div>
+        {/* Scrolls sideways on a narrow phone instead of wrapping into a mess */}
+        <div className="mx-auto w-full max-w-3xl overflow-x-auto">
+          <nav className="flex gap-2 px-4 pb-3">
+            {SECTIONS.map((s) => (
+              <Link
+                key={s.href}
+                href={s.href}
+                className="whitespace-nowrap rounded border px-3 py-2 text-sm"
+              >
+                {s.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">
+        {children}
+      </main>
     </div>
   )
 }
