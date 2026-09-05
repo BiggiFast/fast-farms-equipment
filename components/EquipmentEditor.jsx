@@ -94,7 +94,7 @@ export default function EquipmentEditor({ id }) {
           set('slug', slugify(e.target.value))
         }}
         required
-        hint={`mrcoryfast.com/equipment/${form.slug || '…'}`}
+        hint={`www.mrcoryfast.com/equipment/${form.slug || '…'}`}
       />
 
       <TextField

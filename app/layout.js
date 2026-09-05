@@ -27,7 +27,12 @@ const montserrat = Montserrat({
 })
 
 export const metadata = {
-  metadataBase: new URL('https://mrcoryfast.com'),
+  // www is canonical — the bare domain 302s to it. metadataBase makes every
+  // relative image and canonical URL absolute, so pointing it at the
+  // redirecting host would put a redirect in every share card and canonical
+  // tag. Search engines follow those, but it wastes a hop and muddies which
+  // URL is authoritative.
+  metadataBase: new URL('https://www.mrcoryfast.com'),
   title: {
     default: 'Cory Fast',
     template: '%s — Cory Fast',

@@ -94,7 +94,7 @@ export default function ProjectEditor({ id }) {
           set('slug', slugify(e.target.value))
         }}
         required
-        hint={`mrcoryfast.com/projects/${form.slug || '…'}`}
+        hint={`www.mrcoryfast.com/projects/${form.slug || '…'}`}
       />
 
       <TextField
