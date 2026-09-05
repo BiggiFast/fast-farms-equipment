@@ -7,7 +7,16 @@
       "Bash(npm i:*)",
       "Bash(npm run dev:*)",
       "WebFetch(domain:studioinspo.com)",
-      "Read(//Users/coryfast/Documents/**)"
+      "Read(//Users/coryfast/Documents/**)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_flbjR9/**)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_HeYpki/**)",
+      "Bash(lsof:*)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_6qu3PK/**)",
+      "Read(//Users/coryfast/Desktop/**)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_IcDiIG/**)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_UPAanc/**)",
+      "Read(//var/folders/9p/c5mm62dd0bj3fq5nvk70fthh0000gn/T/TemporaryItems/NSIRD_screencaptureui_AzKIiu/**)",
+      "WebFetch(domain:code.claude.com)"
     ],
     "deny": [],
     "ask": []

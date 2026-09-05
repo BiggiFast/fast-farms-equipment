@@ -1,140 +1,86 @@
-# Fast Farms - Equipment Sales Website
+# MrCoryFast.com
 
-A clean, modern website for listing and selling farm equipment including tractors, trucks, implements, and pickups.
+Personal site for Cory Fast — a **creator site**: a feed of projects, with the
+farm equipment sale kept as one section.
 
-## Tech Stack
+Built with Next.js 16, Supabase, and deployed on Vercel.
 
-- **Frontend**: HTML, CSS, Vanilla JavaScript
-- **Backend**: Node.js with Express
-- **Database**: Supabase (connected & secured ✅)
-- **Authentication**: Supabase Auth (email/password)
-- **Storage**: Supabase Storage (equipment images)
-- **Development**: Nodemon, Browser-sync, Concurrently
-- **Hosting**: Vercel (ready to deploy)
+> **Start with [`HANDOFF.md`](HANDOFF.md)** for current status and what's next.
 
-## Project Structure
+## Run it
 
-```
-/public/               # All public-facing files
-  ├── index.html      # Main equipment listings page
-  ├── about.html      # About page
-  ├── contact.html    # Contact form page
-  ├── styles.css      # All styles
-  └── script.js       # Category filtering & image gallery
-/server.js            # Express server
-/package.json         # Dependencies and scripts
-```
-
-## Setup
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-## Development
-
-**Start development server with live reload:**
 ```bash
+npm install
 npm run dev
 ```
-This runs both the Node server and Browser-sync for automatic reloading.
-- **Public Site**: http://localhost:3001
-- **Admin Panel**: http://localhost:3001/equipment/admin.html
-- Server: http://localhost:3000
-- Browser-sync UI: http://localhost:3002
 
-**Individual commands:**
-- `npm start` - Start production server only
-- `npm run watch` - Start server with nodemon (auto-restart on changes)
-- `npm run bs` - Start browser-sync only
+- Site: http://localhost:3000
+- Admin: http://localhost:3000/admin (Supabase email + password)
+- **From your phone**: use the `Network:` URL Next prints on startup, on the
+  same wifi. Worth doing — the admin was built for phone use.
 
-**Admin Access:**
-- Login with your Supabase user credentials
-- See `ADMIN_SETUP.md` for setup instructions
-- See `SECURITY_SETUP_GUIDE.md` for security details
+> **npm cache note:** this machine has root-owned files in `~/.npm` from an old
+> npm bug. If npm fails with `EACCES`, either run
+> `sudo chown -R 501:20 "$HOME/.npm"` once to fix it permanently, or prefix
+> commands with `npm_config_cache=/tmp/npm-cache`.
 
-## Features
+## Layout
 
-### Public Site
-- **Category Filtering**: Filter equipment by type (All, Tractor, Truck, Implement, Pickup)
-- **Image Gallery**: Click thumbnails to change main image
-- **Responsive Design**: Works on mobile, tablet, and desktop
-- **Contact Forms**: Allow users to reach out about equipment
-
-### Admin Dashboard
-- **Secure Authentication**: Supabase Auth with email/password
-- **Equipment Management**: Add, edit, delete, and toggle active/inactive
-- **Multi-Photo Uploads**: Up to 5 photos per listing with auto-resize
-- **Main Photo Selection**: Choose which photo displays as primary
-- **Soft Deletes**: Items can be restored from database if needed
-- **Real-time Updates**: Changes reflect immediately
-
-## Current Status
-
-### Completed:
-- ✅ Project structure organized
-- ✅ Navigation and layout
-- ✅ Category filtering system
-- ✅ Image gallery functionality
-- ✅ Contact and About pages
-- ✅ Responsive design
-- ✅ **Supabase integration complete**
-- ✅ **Admin dashboard with authentication**
-- ✅ **Row Level Security (RLS) enabled**
-- ✅ **Secure image uploads (authenticated only)**
-- ✅ **Multi-photo support (up to 5 per listing)**
-
-### Next Steps:
-1. Move Supabase credentials to environment variables
-2. Add equipment listings via admin panel
-3. Connect public site to load equipment from Supabase
-4. Deploy to Vercel
-
-## Data Structure (Supabase Ready)
-
-Equipment items follow this structure:
-```javascript
-{
-  id: 0,
-  title: "",
-  category: "",      // "tractor", "truck", "implement", "pickup"
-  price: 0,
-  year: 0,
-  hours: 0,          // or miles for vehicles
-  condition: "",     // "Excellent", "Good", "Fair"
-  description: "",
-  features: [],
-  images: [],
-  contactInfo: {
-    sellerName: "",
-    phone: "",
-    email: ""
-  }
-}
+```
+app/
+  layout.js              Header, footer, and site-wide metadata — written ONCE
+  page.js                Home: the hero, plus the feed once anything is posted
+  projects/              Project list and per-project pages with their updates
+  equipment/             Listings, and ONE PAGE PER MACHINE — the SEO win
+  about/  doug/          About, and the memorial page for Cory's father
+  admin/
+    login/               Sign in. Outside the (dashboard) group so it shows
+                         no nav and no "Sign out" to someone signed out
+    (dashboard)/         Everything requiring a login: updates, projects,
+                         equipment
+lib/
+  queries.js             Every database read the public site makes
+  adminApi.js            Every write the admin makes
+  photos.js              Reads the jsonb photo array; handles legacy image_url
+  supabase/              Three clients — see docs/APP_NOTES.md
+components/              Site chrome, admin forms, photo uploader
+proxy.js                 Protects /admin and keeps the session alive
+supabase/migrations/     Every schema change, in order
+legacy/                  The original static site. NOT served — kept for
+                         reference while the new design is in progress
 ```
 
-## Code Style
+## Where the documentation lives
 
-- Clear, descriptive variable names
-- 2-space indentation
-- Semantic HTML with section comments
-- Modern ES6+ JavaScript
-- Readability over cleverness
+| File | What it's for |
+|---|---|
+| **[`HANDOFF.md`](HANDOFF.md)** | **Read first.** Current state, what's next, what's blocked |
+| [`DECISIONS.md`](DECISIONS.md) | Why things are the way they are. Append-only |
+| [`docs/APP_NOTES.md`](docs/APP_NOTES.md) | How the app works: the three Supabase clients, the CSS approach, decisions worth not undoing |
+| [`docs/SURVEY_SPEC.md`](docs/SURVEY_SPEC.md) | Spec for the family equipment-ownership survey |
+| [`docs/PROJECT_SUMMARY.md`](docs/PROJECT_SUMMARY.md) | The original static site, now in `legacy/` |
+| [`docs/`](docs/) | Reference: admin setup, security |
+| [`docs/archive/`](docs/archive/) | Finished history. Kept, not maintained |
 
-## Design Guidelines
+### Secret protection
 
-- Clean, warm, trustworthy aesthetic
-- Natural greens, off-whites, muted browns ("Oregon farm in spring")
-- No heavy shadows or neon colors
-- Generous spacing, grid-based layout
+**This repo is public.** A `pre-commit` hook in `.githooks/` blocks commits
+containing anything secret-shaped — JWTs, private keys, `.env` files, or a
+variable named `*_SECRET` / `*_SERVICE_ROLE_KEY` with a real value.
 
-## License
+It's enabled by `git config core.hooksPath .githooks`, which is already set on
+this machine. After a fresh clone, run that once to turn it back on.
 
-ISC
+Secrets belong in `.env.local` (gitignored) and in Vercel's Environment
+Variables. `git commit --no-verify` bypasses the hook — use it only when you're
+certain it's a false alarm.
 
+The Supabase **anon** key is safe in the browser by design; Row Level Security
+is what protects the data.
 
+### Saving state between sessions
 
-
-
-
+Work happens in short bursts, so there is a `/save-state` command
+(`.claude/skills/save-state/`). Say **"checkpoint"** or "I am stopping for now"
+and Claude commits outstanding work, updates `HANDOFF.md`, logs any decisions,
+and refreshes its memory — so nothing lives only in a chat window.

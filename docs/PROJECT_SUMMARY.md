@@ -1,16 +1,36 @@
-# 📋 PROJECT SUMMARY - MrCoryFast.com Equipment Sales
+# 📋 PROJECT SUMMARY - MrCoryFast.com
 
-> **Master Reference Document** - Single source of truth for the entire project  
-> Last Updated: December 2025
+> **Reference for the ORIGINAL static site** (the one currently live)
+> Last Updated: August 2026
+
+> ## ⚠️ Read `HANDOFF.md` first
+>
+> As of **August 2026** the site is being rebuilt in **Next.js**, in `web/`,
+> and is pivoting from an equipment-sales site to a **creator site** — a feed
+> of projects, with equipment kept as one section.
+>
+> **This document describes the original static site**, now preserved in
+> `legacy/`. It remains accurate for that site. As of 2026-09-04 the Next.js
+> app has moved to the repository root and is what deploys.
+> For current status, open **`HANDOFF.md`**. For the app, see
+> **`docs/APP_NOTES.md`**.
 
 ---
 
 ## 🎯 Project Overview
 
 ### What Is This?
-A personal website for **Cory Fast** (MrCoryFast.com) featuring an equipment sales section to sell farm equipment. This project honors Cory's father, **Doug**, who passed away in December 2024, by helping sell his farm equipment and giving him the retirement he deserved.
+A personal website for **Cory Fast** (MrCoryFast.com). It began as an equipment
+sales site and is now becoming a **creator site** — a feed of projects Cory is
+working on, self-hosted so the audience doesn't depend on someone else's
+algorithm.
 
-### Current Status: ✅ Ready for Deployment
+The **equipment sales section stays**. It honors Cory's father, **Doug**, who
+passed away in December 2024 — selling his farm equipment, and giving him the
+retirement he never got. `doug.html` is a memorial page written by Cory. It is
+his own writing and should not be rewritten or "improved".
+
+### Current Status: ✅ Live, and being superseded
 
 | Component | Status | Notes |
 |-----------|--------|-------|
@@ -19,7 +39,20 @@ A personal website for **Cory Fast** (MrCoryFast.com) featuring an equipment sal
 | Supabase Integration | ✅ Complete | Database, Auth, Storage |
 | Security Setup | ✅ Complete | RLS enabled, Supabase Auth |
 | GitHub | ✅ Connected | github.com/BiggiFast/fast-farms-equipment |
-| Vercel Deployment | ⏳ Pending | Ready after env vars setup |
+| Vercel Deployment | ✅ Live | Serving `public/` as static files |
+| **Next.js rebuild** | 🔨 In progress | In `web/`, branch `nextjs-rebuild`. See `HANDOFF.md` |
+
+### Why a rebuild
+
+Three limits of the static site drove it:
+
+1. **Every page is hand-maintained.** Adding Google Analytics meant pasting the
+   same tag into every `.html` file. A shared layout removes that permanently.
+2. **Equipment wasn't findable.** All listings lived at one URL and were fetched
+   by JavaScript after load, so crawlers saw an empty page and there was no URL
+   to rank. The rebuild gives each machine its own server-rendered page.
+3. **A project feed is the new focus**, and a growing feed is exactly what
+   hand-written HTML is worst at.
 
 ---
 
@@ -121,6 +154,41 @@ MrCoryFast.com/
 | is_active | boolean | Yes | Controls public visibility (default: true) |
 | deleted_at | timestamptz | No | Soft delete timestamp (NULL = not deleted) |
 | created_at | timestamptz | Yes | Auto-generated |
+| slug | text | Yes | URL-safe name, unique. Added Aug 2026 (migration 003) so each machine gets its own page, e.g. `/equipment/2014-case-ih-magnum-380-tractor` |
+
+### Projects Table (added Aug 2026 — migration 001)
+
+For the creator feed. A project is something ongoing that accumulates updates.
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| id | uuid | Yes | Primary key |
+| title | text | Yes | |
+| slug | text | Yes | Unique. `/projects/rebuilding-the-shop` |
+| summary | text | No | One line, shown on cards |
+| body | text | No | Longer intro on the project page |
+| photos | jsonb | Yes | Same shape as equipment photos |
+| status | text | Yes | `active` / `completed` / `paused` |
+| is_published | boolean | Yes | Default false — drafts |
+| started_at | date | No | |
+| created_at / updated_at | timestamptz | Yes | `updated_at` maintained by trigger |
+| deleted_at | timestamptz | No | Soft delete |
+
+### Updates Table (added Aug 2026 — migration 001)
+
+A single entry: a note, a photo, a finding from the road.
+
+| Column | Type | Required | Notes |
+|--------|------|----------|-------|
+| id | uuid | Yes | Primary key |
+| project_id | uuid | No | **Nullable** — NULL means a standalone post belonging to no project. Deleting a project sets this to NULL rather than destroying the updates |
+| title | text | No | Optional; a daily log entry often needs none |
+| body | text | No | |
+| photos | jsonb | Yes | |
+| is_published | boolean | Yes | Default false — drafts |
+| published_at | timestamptz | No | Separate from `created_at`, so a draft written Tuesday and published Friday sorts by Friday |
+| created_at / updated_at | timestamptz | Yes | |
+| deleted_at | timestamptz | No | Soft delete |
 
 ### Photos JSON Structure
 ```javascript
@@ -232,23 +300,27 @@ USING (true) WITH CHECK (true);
 
 ## 🎯 Next Steps
 
-### Immediate (Before Deployment)
-1. [ ] Move Supabase credentials to environment variables
-2. [ ] Set up Vercel project
-3. [ ] Configure Vercel environment variables
-4. [ ] Add Vercel domain to Supabase allowlist
+> Current work is tracked in **`HANDOFF.md`**. This section covers the original
+> static site only.
 
-### After Deployment
-1. [ ] Test all functionality on production
-2. [ ] Add real equipment listings
-3. [ ] Upload equipment photos
-4. [ ] Monitor for issues
+### Completed
+- [x] Set up Vercel project and deploy
+- [x] Add real equipment listings and photos
+- [x] Google Analytics 4 (`G-BDKD0NT6KJ`)
+
+### Superseded by the Next.js rebuild
+- [ ] ~~Move Supabase credentials to environment variables~~ — done in `web/`
+      via `.env.local`. Note the anon key is *designed* to be public; RLS is
+      what protects the data, so this was never a leak.
+- [ ] ~~Search / filtering~~ — revisit after the rebuild
 
 ### Future Enhancements
-- [ ] Search functionality
-- [ ] Price range filtering
-- [ ] Restore deleted items UI
-- [ ] Email notifications for inquiries
+- [ ] Restore-deleted-items UI (soft-deleted rows are currently only
+      recoverable via SQL)
+- [ ] Email notifications for inquiries — the contact form is still
+      "coming soon"
+- [ ] A **Sold** state for equipment, so sold machines show as SOLD rather
+      than disappearing
 
 ---
 
