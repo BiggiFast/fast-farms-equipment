@@ -29,6 +29,9 @@ export default function AdminHome() {
         <Link href="/admin/equipment" className="block rounded border px-4 py-3">
           Equipment
         </Link>
+        <Link href="/admin/survey" className="block rounded border px-4 py-3">
+          Survey
+        </Link>
       </section>
 
       <section>

@@ -12,6 +12,7 @@ const SECTIONS = [
   { href: '/admin/updates', label: 'Updates' },
   { href: '/admin/projects', label: 'Projects' },
   { href: '/admin/equipment', label: 'Equipment' },
+  { href: '/admin/survey', label: 'Survey' },
 ]
 
 // Self-contained: this layout does not assume anything about its parent's

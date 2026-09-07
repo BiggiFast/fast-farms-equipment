@@ -608,3 +608,329 @@ a {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------------------------------------------------------- SURVEY --- */
+/*
+   The family equipment survey. Answered almost entirely on phones, standing in
+   a shed, by people who are not especially interested in websites — so the
+   rules here are: big tap targets, plenty of space between the radio buttons
+   so a thumb can't hit two, and 16px inputs (any smaller and iOS Safari zooms
+   the whole page the moment a field is focused).
+
+   Deliberately plainer than the rest of the site. This is a form to be filled
+   in, not a page to be admired, and the hero-and-gold treatment would make it
+   look like marketing.
+*/
+
+.survey {
+  min-height: 100vh;
+  background-color: var(--color-bg-warm);
+}
+
+.survey-shell {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md) var(--space-2xl);
+}
+
+.survey-centered {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-sm);
+}
+
+/* ---- confirmation screen ---- */
+
+.survey-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.survey-name {
+  font-family: var(--font-eb-garamond), Georgia, serif;
+  font-size: 2.5rem;
+  line-height: 1.15;
+  margin: 0 0 var(--space-sm);
+}
+
+.survey-progress-note {
+  color: var(--color-text-light);
+  margin: 0;
+}
+
+.survey-button {
+  display: inline-block;
+  margin: var(--space-sm) 0;
+  padding: 18px 32px;
+  min-height: 56px;
+  border-radius: 4px;
+  background-color: var(--color-earth);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.survey-button:hover {
+  background-color: var(--color-text);
+}
+
+.survey-fineprint {
+  max-width: 22em;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ---- the survey itself ---- */
+
+.survey-head h1 {
+  font-family: var(--font-eb-garamond), Georgia, serif;
+  font-size: 2rem;
+  margin: var(--space-xs) 0 var(--space-sm);
+}
+
+.survey-intro {
+  color: var(--color-text-light);
+  line-height: 1.6;
+  margin-bottom: var(--space-sm);
+}
+
+.survey-backlink {
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.survey-banner {
+  border-left: 3px solid var(--color-gold);
+  background-color: #fff;
+  padding: var(--space-sm);
+  margin-bottom: var(--space-md);
+  line-height: 1.5;
+}
+
+.survey-progress {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: var(--space-md) 0;
+  padding: var(--space-xs) 0;
+  background-color: var(--color-bg-warm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.survey-empty {
+  color: var(--color-text-muted);
+  padding: var(--space-xl) 0;
+  text-align: center;
+}
+
+/* ---- one card per piece of equipment ---- */
+
+.survey-card {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-bg-card);
+  padding: var(--space-md);
+  margin: 0 0 var(--space-md);
+}
+
+.survey-card-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+  padding: 0 var(--space-xs);
+  font-family: var(--font-eb-garamond), Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 1.3;
+}
+
+.survey-card-number {
+  font-family: var(--font-montserrat), system-ui, sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+/* Stacked, not side by side. A row of five radios on a phone is a row of five
+   chances to tap the wrong one. */
+.survey-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+
+.survey-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: 0 var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.survey-option:hover {
+  border-color: var(--color-earth);
+}
+
+.survey-option.is-chosen {
+  border-color: var(--color-earth);
+  background-color: var(--color-bg-warm);
+  font-weight: 600;
+}
+
+.survey-option input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-earth);
+  flex-shrink: 0;
+}
+
+.survey-option:has(input:disabled) {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* ---- photos ---- */
+
+.survey-photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-xs);
+  margin: var(--space-sm) 0;
+}
+
+.survey-photo {
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: none;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+
+.survey-photo img {
+  display: block;
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.survey-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
+  background-color: rgba(0, 0, 0, 0.9);
+  cursor: zoom-out;
+}
+
+.survey-zoom img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.survey-zoom-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  background: none;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+/* ---- notes and save state ---- */
+
+.survey-note {
+  display: block;
+  margin-top: var(--space-sm);
+}
+
+.survey-note span {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
+}
+
+.survey-note textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  /* 16px minimum. Below it, focusing this field zooms the page on iOS. */
+  font-size: 16px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.survey-note textarea:focus {
+  outline: 2px solid var(--color-earth);
+  outline-offset: 1px;
+}
+
+.survey-hint,
+.survey-save {
+  margin: var(--space-xs) 0 0;
+  font-size: 0.8rem;
+}
+
+.survey-hint {
+  color: var(--color-earth);
+}
+
+.survey-save.is-saving,
+.survey-save.is-saved {
+  color: var(--color-text-muted);
+}
+
+.survey-save.is-error {
+  color: #a33;
+  font-weight: 600;
+}
+
+.survey-retry {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.survey-done {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-md);
+  text-align: center;
+  color: var(--color-text-light);
+  line-height: 1.6;
+}

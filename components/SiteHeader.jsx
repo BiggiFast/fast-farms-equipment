@@ -19,7 +19,14 @@ export default function SiteHeader() {
 
   // The admin is a tool, not part of the site. It has its own chrome, and
   // stacking the marketing header on top of it just collides.
-  if (pathname.startsWith('/admin')) return null
+  //
+  // The survey is excluded for a different and stricter reason: its URL
+  // contains a respondent's private token, and every link in this nav is a
+  // chance for a browser to hand that URL to somewhere else as a Referer.
+  // Survey pages carry no outbound links at all. See app/survey/layout.js.
+  if (pathname.startsWith('/admin') || pathname.startsWith('/survey')) {
+    return null
+  }
 
   const isHome = pathname === '/'
 

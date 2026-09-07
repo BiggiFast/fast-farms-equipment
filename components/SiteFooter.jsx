@@ -4,7 +4,12 @@ import { usePathname } from 'next/navigation'
 
 export default function SiteFooter() {
   const pathname = usePathname()
-  if (pathname.startsWith('/admin')) return null
+  // /survey matters most here: the Instagram link below is exactly the kind of
+  // outbound click that would send the page's full URL — token and all — to
+  // another site as the Referer header. See app/survey/layout.js.
+  if (pathname.startsWith('/admin') || pathname.startsWith('/survey')) {
+    return null
+  }
 
   return (
     <footer className="site-footer">
