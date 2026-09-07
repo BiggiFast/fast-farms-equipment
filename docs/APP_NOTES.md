@@ -20,6 +20,12 @@ app/
   equipment/[slug]/      ONE MACHINE PER PAGE — the SEO win
   about/page.js          Bio (still a placeholder — needs Cory's words)
   doug/page.js           In memory of Doug
+  robots.js              What crawlers may visit. Disallows /admin, /survey, /api
+  survey/                THE FAMILY SURVEY — invite-only, unlinked, noindexed
+    layout.js            Bare layout: no nav, no footer, no referrer
+    [token]/             Confirmation: "You're answering as Kaley Fast"
+    [token]/items/       The survey itself
+  api/survey/answer/     The only survey write. Exists to capture the real IP
   admin/
     login/               Sign in. Deliberately outside the (dashboard) group
                          so it shows no nav and no "Sign out"
@@ -27,9 +33,14 @@ app/
       updates/           Post & edit updates — the main flow
       projects/          Create & edit projects
       equipment/         Manage listings
+      survey/            People (revocation console), Items, Results + CSVs
 lib/
   queries.js             Every database read the public site makes
   adminApi.js            Every write the admin makes
+  survey.js              Survey constants shared with the browser
+  surveyApi.js           The four survey database functions, in one place
+  surveyAdmin.js         Survey admin reads and writes
+  surveyResults.js       Consensus scoring and CSV building (pure functions)
   photos.js              Reads the jsonb photo array; handles legacy image_url
   slug.js                Title -> url-safe-slug
   resizeImage.js         Shrinks phone photos before upload
@@ -108,10 +119,19 @@ them indexed. 308 for moved pages so ranking transfers.
 recovery emails point at, and a permanently cached redirect there would be hard
 to undo.
 
-## The admin has no site chrome
+## The admin and the survey have no site chrome
 
-`SiteHeader` and `SiteFooter` return `null` on `/admin`. It's a tool, not part
-of the site, and the two sets of navigation collided. The admin layout sizes
+`SiteHeader` and `SiteFooter` return `null` on `/admin` **and `/survey`**, for
+two different reasons.
+
+The admin is a tool, not part of the site, and the two sets of navigation
+collided.
+
+The survey reason is stricter: a survey URL contains a respondent's private
+token, and every outbound link is a chance for the browser to hand that URL to
+another site as the `Referer` header. The footer's Instagram link was exactly
+that. Survey pages carry **no cross-origin links or scripts at all**, and set
+`referrer: 'no-referrer'`. The admin layout sizes
 itself — do **not** reintroduce negative margins to break out of a parent
 container, which is how it previously broke.
 
@@ -121,13 +141,45 @@ container, which is how it previously broke.
 matters: GA reports the page path, and survey URLs contain a respondent's
 private token.
 
+## The survey
+
+Built 2026-09-06, on branch `survey`. Full reasoning in `SURVEY_SPEC.md` and
+`../supabase/migrations/006_survey.sql`.
+
+**Quarantined on purpose.** Everything lives in `app/survey`, `app/api/survey`,
+`app/admin/survey` and `lib/survey*.js`, so removing the feature later is
+deleting those plus dropping five tables and one bucket.
+
+**It adds no new secrets.** It runs on the same public anon key as the rest of
+the site. The five survey tables refuse `anon` outright — RLS with no anon
+policies, plus an explicit `REVOKE` — and the only way in is four
+`SECURITY DEFINER` functions that take the person's token and validate it
+themselves. A route handler that forgets to check cannot leak anything, because
+there is nothing privileged for it to reach.
+
+**Three rules not to undo:**
+
+- **Answers are append-only.** No policy anywhere permits `UPDATE` on
+  `survey_responses`. The admin can read and delete an answer but never edit
+  one — a record its holder can quietly tidy up is worth little to anyone
+  outside the family. A changed mind leaves both rows.
+- **The gate is in the Server Component**, not in `SurveyForm`. If the token
+  isn't live, the page returns before the form renders, so survey markup never
+  reaches the browser at all. An early return inside a Client Component would
+  still ship it in the HTML.
+- **`is_survey_admin()` must be revoked from `anon` by name.** Supabase grants
+  EXECUTE on new functions to `anon` *directly*, and `REVOKE ... FROM PUBLIC`
+  does not remove a grant made to a named role. This was caught by
+  `006_VERIFY_survey.sql`, which is why that file exists.
+
+**Consensus excludes "Not sure" from the winner** and reports it alongside —
+counting it produces a consensus of "Not sure" on exactly the items most needing
+a follow-up call. `lib/surveyResults.js` is pure functions so this stays
+checkable.
+
 ## Not built yet
 
-- **The ownership survey** — see `SURVEY_SPEC.md` (v2). Introduces no
-  new secrets: token links plus RLS, no service role key
 - **RSS feed** — important: it's what makes a self-owned feed followable, and
   independence from platform algorithms is the whole point of the project
-- **Google Analytics** — the old site's `G-BDKD0NT6KJ` tag needs adding once,
-  in `app/layout.js`
 - **The new visual design**, when Cory's wireframes are ready — edit
   `app/globals.css`, not every component

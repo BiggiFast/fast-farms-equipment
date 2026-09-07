@@ -1,7 +1,7 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-04 — SITE IS LIVE**
-**Branch: `main` — the rebuild is merged and deployed**
+**Last updated: 2026-09-06 — site live; survey built and awaiting a preview test**
+**Branch: `survey` — pushed to GitHub, NOT merged. `main` is still live and unchanged**
 
 Start here. This is the living "where are we" document.
 
@@ -68,8 +68,25 @@ is preserved in `legacy/` and is not served.
 - The homepage feed renders only once something is published, so today it looks
   byte-for-byte like the live site
 
+**The family equipment survey** — built 2026-09-06, on branch `survey`
+- Database applied to **live Supabase** already: five tables, one view, four
+  `SECURITY DEFINER` functions, the `survey-images` bucket, Cory seeded as the
+  only survey admin. Verified by `006_VERIFY_survey.sql` (all PASS) and
+  `006_VERIFY_survey_live.sql` (all PASS)
+- Family pages: confirmation screen, the survey itself, auto-save, photo zoom
+- Admin: **People** (revoke / reactivate / regenerate / freeze, device count,
+  visit history), **Items** (photograph one, or pull from an equipment
+  listing), **Results** (matrix, consensus, inline confirmed owner, two CSVs)
+- Revoking someone now shuts a page they already have open, on their next tap
+- Verified locally: a bad token returns **no survey markup at all**; survey
+  pages emit `no-referrer` and contain no cross-origin links; every
+  `/admin/survey*` route redirects when signed out; 15 checks pass on the
+  consensus rules and CSV quoting
+
 **Safety**
 - `.githooks/pre-commit` blocks secret-shaped commits. Repo is public
+- `app/robots.js` is **new** — the site previously had no robots.txt at all.
+  Allows the site, disallows `/admin`, `/survey`, `/api`
 
 **Cleanup**
 - Removed orphaned `public/main-index.html`, `public/main-about.html`
@@ -127,13 +144,33 @@ Neither would have surfaced until it bit.
 
 ## Next up
 
-1. **Build the survey** per `docs/SURVEY_SPEC.md` v2, in stages: schema and the
-   four `SECURITY DEFINER` functions, then the token pages, then admin
-   People/Items, then Results + both CSV exports. Nothing is blocking it.
-2. **RSS feed** — what makes a self-owned feed followable. Independence from
-   platform algorithms is the point of the project.
-3. **Apply the new design** when Cory's wireframes are ready. Edit
-   `app/globals.css`, not every component.
+**1. Test the survey on the Vercel preview** — this is where we stopped.
+The `survey` branch is pushed, so Vercel should have built a preview. Find the
+URL in the Vercel dashboard under Deployments (tagged `survey`, not Production).
+
+What to check there, on a real phone:
+- Sign into `/admin`, Survey → People, **Copy link** for Test Person
+- Text it to yourself, answer a few, type a note, lock the phone mid-sentence
+- Revoke her in the admin; the phone should shut the page on the next tap
+
+**Possible snag:** Vercel keeps separate environment variables for Production
+and Preview. If `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+are ticked for Production only, the preview build fails naming the missing one.
+Fix is ticking "Preview" for both in the Vercel project settings.
+
+**2. Then go live** — `git checkout main && git merge survey && git push`.
+Nothing else is needed; the database is already in place.
+Rollback if ever required: `git revert 4006e03 && git push`.
+
+**3. Before sending real links** — run
+`supabase/migrations/007_TEST_DATA_CLEANUP.sql` so no fake person sits in the
+results matrix. Then add the real items and the real people in the admin.
+
+**4. RSS feed** — what makes a self-owned feed followable. Independence from
+platform algorithms is the point of the project. Nothing blocks it.
+
+**5. Apply the new design** when Cory's wireframes are ready. Edit
+`app/globals.css`, not every component.
 
 ### Smaller, when convenient
 
@@ -143,6 +180,10 @@ Neither would have surfaced until it bit.
   disappearing. The grain truck is currently just hidden.
 - **`legacy/`** can be deleted whenever it stops being a useful reference —
   it's in git history regardless.
+- **Survey lockout on photo taps.** Revocation shuts the page on any answer or
+  note, but not on merely enlarging a photo — nothing is recorded either way.
+  Cory considered it and said leave it: a server check per photo tap would
+  clutter the visit log, which is what makes a forwarded link visible.
 
 ## Needs Cory, not code
 
@@ -168,6 +209,30 @@ npm run dev
 ---
 
 ## Gotchas worth knowing
+
+**Supabase's SQL editor shows only the LAST statement's result.** Not one table
+per statement — the last one wins and the rest are silently hidden. This cost
+real time: a check script full of separate queries appeared to run and reported
+nothing. Every `PREVIEW` / `VERIFY` / `LOOK` script is therefore written as
+**one single query**, usually a `union all`, so all its rows come back together.
+
+**`REVOKE ... FROM PUBLIC` does not remove a grant made to a named role.**
+Supabase hands `anon` EXECUTE on new functions in the `public` schema
+*directly*, so revoking from `PUBLIC` leaves that grant standing. `anon` must be
+named: `revoke all on function ... from anon`. This slipped through on
+`is_survey_admin()` and was caught by `006_VERIFY_survey.sql` — which is the
+argument for having written that file at all.
+
+**Route segment config is being removed in Next 16.** `export const dynamic`
+and `revalidate` still work today but are gone once Cache Components is enabled,
+and `dynamic.md` has already disappeared from the bundled docs. The survey pages
+rely on `headers()` instead, which forces dynamic rendering on its own.
+
+**macOS screenshot drag-and-drop doesn't reach Claude.** Dragging from the
+floating thumbnail passes a path under `/var/folders/.../NSIRD_screencaptureui_*`
+that macOS wipes the moment the drag ends, so the image never arrives. Save it
+(it lands on the Desktop) and drag it from there, or paste with **Ctrl+V**.
+For SQL results, pasting the text is better than a screenshot anyway.
 
 **The domain redirects to www.** `mrcoryfast.com` → `www.mrcoryfast.com`.
 `metadataBase` in `app/layout.js` points at the www form to match. Don't change
@@ -225,9 +290,29 @@ the site rendered dark on a dark-mode Mac.
 
 ## Branch and repo
 
-- **`main` is live.** `nextjs-rebuild` is merged and can be deleted
-- Vercel deploys production from `main` via the GitHub integration
+- **`main` is live** and currently at `af08e90` — the survey is NOT on it
+- **`survey`** (`4006e03`) holds the whole survey feature. Pushed to GitHub,
+  awaiting a preview test, then merge
+- Vercel deploys production from `main` via the GitHub integration, and builds
+  a protected preview for every other branch
 - Remote: github.com/BiggiFast/fast-farms-equipment
 
 The Next app is at the repository root. `legacy/` holds the original static
 site and is not served.
+
+### The survey's SQL scripts
+
+All under `supabase/migrations/`. The `006_` files have already been applied to
+the live database — they are recorded here, not pending.
+
+| File | What it is |
+|---|---|
+| `006_survey.sql` | The migration. Safe to re-run |
+| `006_SEED_admin.sql` | Makes Cory the survey admin. Required, or the admin shows nothing |
+| `006_PREVIEW_first.sql` | Read-only pre-flight check |
+| `006_VERIFY_survey.sql` | Read-only. How the database is configured |
+| `006_VERIFY_survey_live.sql` | Read-only. How it actually behaves |
+| `007_TEST_DATA.sql` | Creates "Test Person" + items from the equipment listings |
+| `007_TEST_DATA_CLEANUP.sql` | Removes them. **Run before real links go out** |
+| `008_LOOK_answers.sql` | Read-only. Every answer, current and superseded |
+| `008_LOOK_access.sql` | Read-only. Who opened a link, from how many devices |

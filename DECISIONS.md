@@ -9,6 +9,62 @@ an accident.
 
 ---
 
+## 2026-09-06 — The survey: five choices, and one bug the checks caught
+
+**Decided:** Built the ownership survey to `SURVEY_SPEC.md` v2 in four stages —
+database, family pages, admin, results. On branch `survey`, pushed but not
+merged; `main` and production are untouched.
+
+**Committed to a branch rather than `main`, deliberately.** `main` deploys
+straight to production and the database is already in place, so merging would
+put a live `/survey` on the site within minutes. That should be a decision Cory
+makes, not a side effect of the word "commit."
+
+**Answers are append-only, and not even the admin can edit one.** No policy
+anywhere permits `UPDATE` on `survey_responses`; the admin has SELECT and DELETE
+only. The survey exists because some family members may later dispute who owned
+what, and a record its holder can quietly tidy up is worth little to anyone
+outside the family. A changed answer leaves both rows, and the Results matrix
+flags it.
+
+**"Not sure" is counted but can never win a consensus.** Letting it win would
+produce a consensus of "Not sure" on exactly the items most needing a follow-up
+call. The winner is chosen from named people only and the unsure count is
+reported beside it — "Doug (2 of 4, 1 unsure)". A consequence worth knowing:
+one named answer against three unsure reads as "Doug (1 of 4, 3 unsure)". Thin
+evidence, but shown with its count rather than as a bare name.
+`lib/surveyResults.js` is pure functions so this stays checkable; 15 checks
+cover it plus CSV quoting of notes containing commas, quotes and line breaks.
+
+**A fifth `SECURITY DEFINER` function beyond the spec's four.** The spec has
+admin policies sub-query `survey_admins` directly, which would recurse when
+applied to `survey_admins` itself and would make every other table depend on a
+second policy evaluating correctly. `is_survey_admin()` does the lookup with the
+owner's privileges and returns a boolean. It is granted to `authenticated` only,
+so the spec's real claim — that the four functions are the only *anon*-executable
+path — still holds, and `006_VERIFY_survey.sql` asserts it.
+
+**Revocation now shuts a page that is already open.** Cory asked for it after
+testing. The database already refused the writes, so nothing was ever at risk;
+the page merely *looked* usable, which he judged confusing. It acts on the
+refusal reason the function already returns. He explicitly declined extending
+this to photo taps: a server check per tap would clutter the access log, which
+is the very thing that makes a forwarded link visible. **His call, and the
+right trade.**
+
+**The bug the checks caught.** `is_survey_admin()` was left callable by `anon`,
+because `REVOKE ... FROM PUBLIC` does not remove a grant Supabase made to
+`anon` by name. Harmless in practice — it returns `false` for an anonymous
+caller and there is no data behind it — but it broke the rule that there are
+exactly four doors. Found by `006_VERIFY_survey.sql` on its first real run,
+which is the argument for writing verification that asserts the *design*, not
+just that things exist.
+
+**Revisit if:** the survey outlives the equipment listings. Survey items link to
+`equipment.id` and copy photo *URLs*, not files — deleting a listing's photos
+would break the survey item's images while keeping its answers. Fine for
+something short-lived; copy the files into `survey-images` if it isn't.
+
 ## 2026-09-04 — Launched, and the four layers that had to be peeled back first
 
 **Decided:** Cut over by merging `nextjs-rebuild` into `main`, which deletes
