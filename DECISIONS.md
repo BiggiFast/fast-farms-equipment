@@ -9,6 +9,35 @@ an accident.
 
 ---
 
+## 2026-09-07 — Survey approved as built; merge before adding real people
+
+**Decided:** The survey is finished as built. Cory tested it on the Vercel
+preview and kept it, including the confirmation screen's wording — he asked to
+see that copy written out, considered rewriting it, and concluded it was fine.
+**His call.** The text is plain content with nothing load-bearing behind it, so
+it can be changed at any time without touching the security model.
+
+**Decided:** Merge to `main` BEFORE adding the real people and items, rather
+than doing the data entry from the preview.
+
+**Why**, and it is the kind of thing that only bites after the work is done:
+the admin's "Copy link" button builds its URL from `window.location.origin`.
+Used on a preview deployment it produces a `...vercel.app` link that demands a
+Vercel login, so family could not open it. Because preview and production share
+one Supabase project, the people and photos *would* save correctly — the data
+would be right and only the handed-out links useless, which is exactly the sort
+of failure that isn't noticed until somebody says the link doesn't work.
+
+Merging first is safe on its own: `/survey` is unlinked, noindexed and
+disallowed in robots.txt, so the visible site does not change.
+
+**Revisit if:** the admin ever needs to be used from more than one domain. The
+honest fix would be a configured public base URL rather than reading the
+current origin — deliberately not built now, because one domain is the whole
+requirement and the extra setting would be one more thing to get wrong.
+
+---
+
 ## 2026-09-06 — The survey: five choices, and one bug the checks caught
 
 **Decided:** Built the ownership survey to `SURVEY_SPEC.md` v2 in four stages —

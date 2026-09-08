@@ -172,6 +172,11 @@ there is nothing privileged for it to reach.
   does not remove a grant made to a named role. This was caught by
   `006_VERIFY_survey.sql`, which is why that file exists.
 
+**"Copy link" reads `window.location.origin`.** Survey links must therefore be
+copied from the real domain — the same button used on a Vercel preview yields a
+`...vercel.app` URL that requires a Vercel login. There is no configured base
+URL because the site has exactly one domain; add one if that ever changes.
+
 **Consensus excludes "Not sure" from the winner** and reports it alongside —
 counting it produces a consensus of "Not sure" on exactly the items most needing
 a follow-up call. `lib/surveyResults.js` is pure functions so this stays

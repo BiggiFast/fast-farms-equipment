@@ -1,6 +1,6 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-06 — site live; survey built and awaiting a preview test**
+**Last updated: 2026-09-07 — survey tested on the preview and approved; ready to merge**
 **Branch: `survey` — pushed to GitHub, NOT merged. `main` is still live and unchanged**
 
 Start here. This is the living "where are we" document.
@@ -144,27 +144,29 @@ Neither would have surfaced until it bit.
 
 ## Next up
 
-**1. Test the survey on the Vercel preview** — this is where we stopped.
-The `survey` branch is pushed, so Vercel should have built a preview. Find the
-URL in the Vercel dashboard under Deployments (tagged `survey`, not Production).
+Cory tested the survey on the Vercel preview on 2026-09-07 and approved it,
+including the confirmation screen's wording, which he considered changing and
+then decided to keep. **The next three steps must happen in this order.**
 
-What to check there, on a real phone:
-- Sign into `/admin`, Survey → People, **Copy link** for Test Person
-- Text it to yourself, answer a few, type a note, lock the phone mid-sentence
-- Revoke her in the admin; the phone should shut the page on the next tap
+**1. Merge to `main`** — `git checkout main && git merge survey && git push`.
 
-**Possible snag:** Vercel keeps separate environment variables for Production
-and Preview. If `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-are ticked for Production only, the preview build fails naming the missing one.
-Fix is ticking "Preview" for both in the Vercel project settings.
+This has to come first, and the reason is not obvious. `/survey` does not exist
+on `mrcoryfast.com` until it does, and the admin's **Copy link** button builds
+its link from whatever address the admin is being viewed at
+(`window.location.origin`). Copy a link from the *preview* admin and you get a
+`...vercel.app` URL that demands a Vercel login — family cannot open it. The
+people and photos would be saved correctly (preview and production share one
+Supabase project); only the handed-out link would be useless.
 
-**2. Then go live** — `git checkout main && git merge survey && git push`.
-Nothing else is needed; the database is already in place.
+Merging is safe on its own: `/survey` is unlinked, noindexed and disallowed in
+robots.txt, so nothing about the visible site changes.
 Rollback if ever required: `git revert 4006e03 && git push`.
 
-**3. Before sending real links** — run
-`supabase/migrations/007_TEST_DATA_CLEANUP.sql` so no fake person sits in the
-results matrix. Then add the real items and the real people in the admin.
+**2. Run `supabase/migrations/007_TEST_DATA_CLEANUP.sql`** so "Test Person" and
+the tagged test items don't sit in the results matrix.
+
+**3. Add the real people and items** at **www.mrcoryfast.com/admin** — not the
+preview — then use Copy link and text each person their own.
 
 **4. RSS feed** — what makes a self-owned feed followable. Independence from
 platform algorithms is the point of the project. Nothing blocks it.
@@ -209,6 +211,19 @@ npm run dev
 ---
 
 ## Gotchas worth knowing
+
+**Vercel's Overview page only ever shows the PRODUCTION deployment.** Both
+links on it are aliases for `main`. A branch preview lives under the
+**Deployments** tab, on the row whose source branch is not `main`. This cost
+time — the survey looked absent when it was simply on another branch.
+The branch alias also follows a predictable shape:
+`<project>-git-<branch>-<scope>.vercel.app`.
+
+**"Copy link" inherits the address you're viewing the admin at.** It is built
+from `window.location.origin`, so a link copied from a preview deployment
+points at `...vercel.app` and requires a Vercel login to open. Always copy
+survey links from the real domain. See "Next up" for why this dictates the
+order of the remaining steps.
 
 **Supabase's SQL editor shows only the LAST statement's result.** Not one table
 per statement — the last one wins and the rest are silently hidden. This cost
