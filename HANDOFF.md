@@ -1,7 +1,7 @@
 # HANDOFF — MrCoryFast.com
 
-**Last updated: 2026-09-07 — survey tested on the preview and approved; ready to merge**
-**Branch: `survey` — pushed to GitHub, NOT merged. `main` is still live and unchanged**
+**Last updated: 2026-09-08 — THE SURVEY IS LIVE. Test data cleared; awaiting real people**
+**Branch: `main` at `f7161ae` — merged and deployed. The `survey` branch is now redundant**
 
 Start here. This is the living "where are we" document.
 
@@ -50,7 +50,7 @@ is preserved in `legacy/` and is not served.
 - `slug` column on `equipment`, backfilled
 - Equipment relisted; the non-equipment "Site UPDATE" post retired
 
-**Next.js app in `web/`** — builds clean, lints clean
+**Next.js app at the repo root** — builds clean, lints clean
 - Feed, projects list, project detail, equipment list, **one page per machine**,
   about, Doug
 - `/admin` — private, phone-friendly, sectioned Updates / Projects / Equipment
@@ -68,7 +68,7 @@ is preserved in `legacy/` and is not served.
 - The homepage feed renders only once something is published, so today it looks
   byte-for-byte like the live site
 
-**The family equipment survey** — built 2026-09-06, on branch `survey`
+**The family equipment survey** — LIVE on 2026-09-08
 - Database applied to **live Supabase** already: five tables, one view, four
   `SECURITY DEFINER` functions, the `survey-images` bucket, Cory seeded as the
   only survey admin. Verified by `006_VERIFY_survey.sql` (all PASS) and
@@ -78,10 +78,16 @@ is preserved in `legacy/` and is not served.
   visit history), **Items** (photograph one, or pull from an equipment
   listing), **Results** (matrix, consensus, inline confirmed owner, two CSVs)
 - Revoking someone now shuts a page they already have open, on their next tap
-- Verified locally: a bad token returns **no survey markup at all**; survey
-  pages emit `no-referrer` and contain no cross-origin links; every
-  `/admin/survey*` route redirects when signed out; 15 checks pass on the
-  consensus rules and CSV quoting
+- Photos come before the names on each card, and the viewer moves between
+  them with arrows, swipe, keyboard and a "2 of 3" counter
+- **Verified against production** after the merge: a bad token returns no
+  survey markup at all (0 cards, 0 radios, 0 names); survey pages emit
+  `no-referrer` and `noindex` and contain no cross-origin links; every
+  `/admin/survey*` route 307s to login; home, equipment, contact, Doug and
+  about all 200; the tractor page still carries `"price":183000`
+- 15 checks pass on the consensus rules and CSV quoting, 9 on photo navigation
+- **Test data cleared 2026-09-08.** The survey currently has no people and no
+  items — that is the next job, not a fault
 
 **Safety**
 - `.githooks/pre-commit` blocks secret-shaped commits. Repo is public
@@ -144,35 +150,55 @@ Neither would have surfaced until it bit.
 
 ## Next up
 
-Cory tested the survey on the Vercel preview on 2026-09-07 and approved it,
-including the confirmation screen's wording, which he considered changing and
-then decided to keep. **The next three steps must happen in this order.**
+The survey went live on 2026-09-08 and the test data has been cleared. What
+remains is data entry, and it is Cory's to do — no code is blocking it.
 
-**1. Merge to `main`** — `git checkout main && git merge survey && git push`.
+**1. Load the equipment into the survey** — paste
+`supabase/migrations/009_LOAD_equipment_items.sql`. Adds one survey item per
+live listing, photos carried across. Safe to re-run; it skips listings already
+in the survey and will not overwrite an edited title.
 
-This has to come first, and the reason is not obvious. `/survey` does not exist
-on `mrcoryfast.com` until it does, and the admin's **Copy link** button builds
-its link from whatever address the admin is being viewed at
-(`window.location.origin`). Copy a link from the *preview* admin and you get a
-`...vercel.app` URL that demands a Vercel login — family cannot open it. The
-people and photos would be saved correctly (preview and production share one
-Supabase project); only the handed-out link would be useless.
+Optionally also `009_LOAD_sold_grain_truck.sql`. The truck is hidden from the
+equipment page because it sold, but the survey records who ORIGINALLY owned
+each machine, and that does not stop mattering because the machine is gone.
+**Cory's call, deliberately left as a separate script.** If it reports nothing
+added, the stored name doesn't contain "4900" and the filter needs adjusting.
 
-Merging is safe on its own: `/survey` is unlinked, noindexed and disallowed in
-robots.txt, so nothing about the visible site changes.
-Rollback if ever required: `git revert 4006e03 && git push`.
+**2. Add the real people** — admin → Survey → People. Then **Copy link** and
+text each person their own. Copy from **www.mrcoryfast.com/admin**, never a
+preview deployment: the button builds its URL from the address you are viewing
+it at, and a `...vercel.app` link demands a Vercel login that family do not
+have.
 
-**2. Run `supabase/migrations/007_TEST_DATA_CLEANUP.sql`** so "Test Person" and
-the tagged test items don't sit in the results matrix.
+**3. Watch the People tab** as answers come in. The **devices** count is the
+forwarding signal — one or two is normal, three or more is worth a look. Revoke
+kills a link on its very next request; Regenerate replaces it and keeps the
+answers.
 
-**3. Add the real people and items** at **www.mrcoryfast.com/admin** — not the
-preview — then use Copy link and text each person their own.
+### Then, when the survey is done
 
-**4. RSS feed** — what makes a self-owned feed followable. Independence from
-platform algorithms is the point of the project. Nothing blocks it.
+- **Export both CSVs** from Results and keep them somewhere outside this
+  website. The history file is the one that answers the question if the record
+  is ever disputed.
+- **Remove the feature** if wanted: delete `app/survey`, `app/api/survey`,
+  `app/admin/survey`, `lib/survey*.js`, then drop the five tables, the view,
+  the five functions and the `survey-images` bucket. The teardown list is at
+  the top of `supabase/migrations/006_survey.sql`.
 
-**5. Apply the new design** when Cory's wireframes are ready. Edit
-`app/globals.css`, not every component.
+### Other work, unblocked
+
+- **RSS feed** — what makes a self-owned feed followable. Independence from
+  platform algorithms is the point of the project.
+- **Apply the new design** when Cory's wireframes are ready. Edit
+  `app/globals.css`, not every component.
+- **Revoke → Reactivate restores the ORIGINAL link.** Cory spotted this and
+  asked whether it should. It should — forcing a new link on every reactivate
+  would mean re-texting everyone after a routine pause. But the admin gives no
+  hint which situation you are in, and reactivating after a *leak* puts the
+  leaked link back in service. Proposed and not yet built: a confirmation on
+  Reactivate naming the trade-off, making Regenerate also reactivate so fixing
+  a leak is one tap, and showing `token_rotated_at` in the row. ~20 lines, no
+  database change.
 
 ### Smaller, when convenient
 
@@ -211,6 +237,16 @@ npm run dev
 ---
 
 ## Gotchas worth knowing
+
+**Cloudflare sits in front of Vercel, and APPENDS to `robots.txt`.** It does
+not replace it: the served file is Cloudflare's managed AI-crawler block
+followed by the rules from `app/robots.js`. This briefly looked like an
+override and was reported as one — wrongly. The cause was checking *during* a
+deploy, when the old site (which had no robots.txt at all) was still answering.
+**Wait for a deploy to finish before concluding anything from what production
+returns.** The file now carries two `User-agent: *` groups, which is untidy but
+works — the standard says groups sharing a user-agent are merged, and Google
+and Bing both do.
 
 **Vercel's Overview page only ever shows the PRODUCTION deployment.** Both
 links on it are aliases for `main`. A branch preview lives under the
@@ -305,11 +341,11 @@ the site rendered dark on a dark-mode Mac.
 
 ## Branch and repo
 
-- **`main` is live** and currently at `af08e90` — the survey is NOT on it
-- **`survey`** (`4006e03`) holds the whole survey feature. Pushed to GitHub,
-  awaiting a preview test, then merge
-- Vercel deploys production from `main` via the GitHub integration, and builds
-  a protected preview for every other branch
+- **`main` is live** at `f7161ae`, and now includes the survey
+- **`survey`** is merged and redundant; it can be deleted
+- `nextjs-rebuild` is also long merged and can be deleted
+- Vercel deploys production from `main`; every other branch gets a protected
+  preview. **Cloudflare sits in front of Vercel** on this domain
 - Remote: github.com/BiggiFast/fast-farms-equipment
 
 The Next app is at the repository root. `legacy/` holds the original static
@@ -331,3 +367,5 @@ the live database — they are recorded here, not pending.
 | `007_TEST_DATA_CLEANUP.sql` | Removes them. **Run before real links go out** |
 | `008_LOOK_answers.sql` | Read-only. Every answer, current and superseded |
 | `008_LOOK_access.sql` | Read-only. Who opened a link, from how many devices |
+| `009_LOAD_equipment_items.sql` | Loads the live listings into the survey. Safe to re-run |
+| `009_LOAD_sold_grain_truck.sql` | Optional. The sold truck, as a separate decision |

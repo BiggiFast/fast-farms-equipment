@@ -119,6 +119,15 @@ them indexed. 308 for moved pages so ranking transfers.
 recovery emails point at, and a permanently cached redirect there would be hard
 to undo.
 
+## Cloudflare sits in front of Vercel
+
+The domain is proxied through Cloudflare, which **appends** its managed
+AI-crawler block to `robots.txt` rather than replacing it — the served file is
+Cloudflare's rules followed by `app/robots.js`'s. Two `User-agent: *` groups
+result, which is untidy but works, since the standard merges groups sharing a
+user-agent. Turning Cloudflare's block off would tidy the file and lose the
+AI-crawler blocking; not worth it.
+
 ## The admin and the survey have no site chrome
 
 `SiteHeader` and `SiteFooter` return `null` on `/admin` **and `/survey`**, for
@@ -143,7 +152,7 @@ private token.
 
 ## The survey
 
-Built 2026-09-06, on branch `survey`. Full reasoning in `SURVEY_SPEC.md` and
+**Live since 2026-09-08.** Full reasoning in `SURVEY_SPEC.md` and
 `../supabase/migrations/006_survey.sql`.
 
 **Quarantined on purpose.** Everything lives in `app/survey`, `app/api/survey`,
@@ -171,6 +180,21 @@ there is nothing privileged for it to reach.
   EXECUTE on new functions to `anon` *directly*, and `REVOKE ... FROM PUBLIC`
   does not remove a grant made to a named role. This was caught by
   `006_VERIFY_survey.sql`, which is why that file exists.
+
+**The card is title, photos, names, note — in that order.** Photos come before
+the radios because the question is "do you recognise this?", and asking it
+before showing the machine is backwards. The title is an `<h2>`, not a
+`<legend>`: a legend is positioned on its fieldset's top border, so a title
+long enough to wrap straddled the card edge. `role="group"` with
+`aria-labelledby` keeps the radios grouped for a screen reader. The heading
+rule is scoped under `.survey` because survey pages sit inside `.site-main`,
+whose `h1, h2, h3` rule would otherwise win and swap the serif for Bebas Neue.
+
+**`PhotoLightbox` clamps rather than wraps.** Arrows, swipe, keyboard and a
+counter. Reaching the last photo greys the arrow instead of looping to the
+first, which reads as a glitch. Taps inside the viewer stop at the controls
+rather than reaching the backdrop that closes it — which is why Close has its
+own handler, having previously worked only because the click bubbled through.
 
 **"Copy link" reads `window.location.origin`.** Survey links must therefore be
 copied from the real domain — the same button used on a Vercel preview yields a

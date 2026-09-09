@@ -9,6 +9,56 @@ an accident.
 
 ---
 
+## 2026-09-08 — Survey merged and live; three changes from using it
+
+**Decided:** Merged `survey` into `main` and deployed. The survey is live on
+mrcoryfast.com. Verified against production afterwards rather than trusting the
+preview: a bad token returns no survey markup at all, survey pages emit
+`no-referrer` and `noindex` with no cross-origin links, every admin route
+redirects when signed out, and the public site is untouched — the tractor page
+still carries `"price":183000`.
+
+**Decided (Cory's, and better than the original):** the card shows the photos
+BEFORE the names. It previously asked people to pick an owner and only then
+showed them the machine, which is backwards for a question that is entirely
+"do you recognise this?". Name order became Grandpa, Doug, Kirk, Kaley, Not
+sure. Neither needed a migration — the CHECK constraint on
+`survey_responses.owner` tests membership, not order, and answers store the
+name as text.
+
+**Decided:** the photo viewer moves between photos rather than closing between
+each. Cory: *"right now i need to hit close on each one and click on the next
+one to enlarge it."* Arrows, swipe, keyboard, and a "2 of 3" counter. It
+**clamps at the ends rather than wrapping** — jumping from the last photo back
+to the first reads as a glitch — and the disabled arrow stays visible, because
+a control that vanishes also looks like a fault.
+
+**Decided:** Revoke → Reactivate restores the person's ORIGINAL link, and that
+is right. Cory noticed and asked whether reactivating should force a new link.
+It should not: a routine pause would then mean re-texting everyone, and the
+likely outcome is that Revoke stops being used at all. But the reasoning
+exposes a real gap — reactivating after a suspected *leak* puts the leaked link
+back in service, and the admin gives no hint which situation you are in.
+**Proposed, not yet built:** a confirmation on Reactivate naming the trade-off,
+making Regenerate also reactivate so fixing a leak is one tap rather than two,
+and surfacing `token_rotated_at` in the row.
+
+**Decided:** the sold grain truck is a separate, optional script rather than
+part of the bulk load. The survey records who ORIGINALLY owned each machine,
+and that does not stop mattering because the machine is gone — if there is ever
+a question about who the proceeds belonged to, the survey is the only record of
+what the family remembered. That is Cory's judgement to make about his own
+family, not a default to bury in a script.
+
+**A correction worth recording.** Production's `robots.txt` was reported as
+being overridden by Cloudflare. It is not — Cloudflare *appends* its managed
+AI-crawler block to the origin's file, and the survey rules are present. The
+check had been run *during* the deploy, while the old site (which had no
+robots.txt at all) was still answering. **Wait for a deploy to finish before
+concluding anything from what production returns.**
+
+---
+
 ## 2026-09-07 — Survey approved as built; merge before adding real people
 
 **Decided:** The survey is finished as built. Cory tested it on the Vercel
