@@ -748,14 +748,16 @@ a {
   margin: 0 0 var(--space-md);
 }
 
-.survey-card-title {
+.survey .survey-card-title {
   display: flex;
   align-items: baseline;
   gap: var(--space-xs);
-  padding: 0 var(--space-xs);
+  margin: 0 0 var(--space-sm);
   font-family: var(--font-eb-garamond), Georgia, serif;
+  font-weight: 500;
   font-size: 1.35rem;
   line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .survey-card-number {
@@ -814,7 +816,7 @@ a {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: var(--space-xs);
-  margin: var(--space-sm) 0;
+  margin: 0 0 var(--space-sm);
 }
 
 .survey-photo {

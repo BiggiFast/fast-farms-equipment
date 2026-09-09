@@ -265,32 +265,16 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
         const noteWithoutOwner = !answer.owner && answer.note.trim() !== ''
 
         return (
-          <fieldset key={item.id} className="survey-card">
-            <legend className="survey-card-title">
+          <div
+            key={item.id}
+            className="survey-card"
+            role="group"
+            aria-labelledby={`item-title-${item.id}`}
+          >
+            <h2 id={`item-title-${item.id}`} className="survey-card-title">
               <span className="survey-card-number">{index + 1}</span>
               {item.title}
-            </legend>
-
-            <div className="survey-options">
-              {OWNER_OPTIONS.map((option) => (
-                <label
-                  key={option}
-                  className={`survey-option${
-                    answer.owner === option ? ' is-chosen' : ''
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`item-${item.id}`}
-                    value={option}
-                    checked={answer.owner === option}
-                    disabled={isFrozen}
-                    onChange={() => chooseOwner(item.id, option)}
-                  />
-                  <span>{option}</span>
-                </label>
-              ))}
-            </div>
+            </h2>
 
             {photos.length > 0 && (
               <div className="survey-photos">
@@ -317,6 +301,27 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
               </div>
             )}
 
+            <div className="survey-options">
+              {OWNER_OPTIONS.map((option) => (
+                <label
+                  key={option}
+                  className={`survey-option${
+                    answer.owner === option ? ' is-chosen' : ''
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`item-${item.id}`}
+                    value={option}
+                    checked={answer.owner === option}
+                    disabled={isFrozen}
+                    onChange={() => chooseOwner(item.id, option)}
+                  />
+                  <span>{option}</span>
+                </label>
+              ))}
+            </div>
+
             <label className="survey-note">
               <span>Anything you remember about it?</span>
               <textarea
@@ -340,7 +345,7 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
               state={status[item.id]}
               onRetry={() => save(item.id, answer.owner, answer.note)}
             />
-          </fieldset>
+          </div>
         )
       })}
 
