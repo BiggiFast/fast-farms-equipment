@@ -28,6 +28,132 @@ function SaveState({ state, onRetry }) {
   )
 }
 
+// Full-screen photo viewer.
+//
+// Split out of the card because it grew real behaviour: several machines have
+// three or four photos, and closing the viewer between each one made looking
+// at them a chore. It moves four ways — arrows, swipe, keyboard, and the
+// counter tells you how many are left so nobody wonders whether they have
+// seen them all.
+//
+// It CLAMPS at the ends rather than wrapping around. Wrapping would jump from
+// the last photo back to the first, which reads as a glitch to anyone not
+// expecting it. The arrow simply greys out instead.
+function PhotoLightbox({ photos, index, title, onMove, onClose }) {
+  const touchRef = useRef(null)
+
+  const atStart = index === 0
+  const atEnd = index === photos.length - 1
+
+  useEffect(() => {
+    function onKey(event) {
+      if (event.key === 'Escape') onClose()
+      if (event.key === 'ArrowLeft') onMove(-1)
+      if (event.key === 'ArrowRight') onMove(1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onMove, onClose])
+
+  // Fetch the neighbours now, so tapping the arrow shows a photo instead of a
+  // blank gap. These are phone photos over a rural connection.
+  useEffect(() => {
+    for (const offset of [-1, 1]) {
+      const next = photos[index + offset]
+      if (next) {
+        const preload = new window.Image()
+        preload.src = next
+      }
+    }
+  }, [photos, index])
+
+  function onTouchStart(event) {
+    const touch = event.changedTouches[0]
+    touchRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  function onTouchEnd(event) {
+    const start = touchRef.current
+    if (!start) return
+    touchRef.current = null
+
+    const touch = event.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+
+    // Ignore anything more vertical than horizontal — that is a scroll
+    // attempt, not a swipe, and treating it as one feels like the page
+    // fighting back.
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return
+    onMove(dx < 0 ? 1 : -1)
+  }
+
+  return (
+    <div
+      className="survey-zoom"
+      role="dialog"
+      aria-modal="true"
+      aria-label={`${title} — photo ${index + 1} of ${photos.length}`}
+      onClick={onClose}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+    >
+      {/* Taps inside the controls must not reach the backdrop, which closes. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={photos[index]}
+        alt={`${title} — photo ${index + 1}`}
+        onClick={(event) => event.stopPropagation()}
+      />
+
+      <button
+        type="button"
+        className="survey-zoom-close"
+        onClick={(event) => {
+          event.stopPropagation()
+          onClose()
+        }}
+      >
+        Close
+      </button>
+
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            className="survey-zoom-arrow is-prev"
+            aria-label="Previous photo"
+            disabled={atStart}
+            onClick={(event) => {
+              event.stopPropagation()
+              onMove(-1)
+            }}
+          >
+            &#8249;
+          </button>
+
+          <button
+            type="button"
+            className="survey-zoom-arrow is-next"
+            aria-label="Next photo"
+            disabled={atEnd}
+            onClick={(event) => {
+              event.stopPropagation()
+              onMove(1)
+            }}
+          >
+            &#8250;
+          </button>
+
+          <p className="survey-zoom-count" aria-live="polite">
+            {index + 1} of {photos.length}
+          </p>
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function SurveyForm({ token, name, isFrozen, items }) {
   const [answers, setAnswers] = useState(() => {
     // Pre-filled from the database, so coming back a week later shows what you
@@ -198,15 +324,6 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
     }
   }, [save])
 
-  useEffect(() => {
-    if (!zoom) return
-    function onKey(event) {
-      if (event.key === 'Escape') setZoom(null)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [zoom])
-
   const answered = items.filter((item) => answers[item.id]?.owner).length
   const allAnswered = items.length > 0 && answered === items.length
 
@@ -284,10 +401,7 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
                     key={url}
                     className="survey-photo"
                     onClick={() =>
-                      setZoom({
-                        url,
-                        alt: `${item.title} — photo ${i + 1}`,
-                      })
+                      setZoom({ photos, index: i, title: item.title })
                     }
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -357,19 +471,22 @@ export default function SurveyForm({ token, name, isFrozen, items }) {
       )}
 
       {zoom && (
-        <div
-          className="survey-zoom"
-          role="dialog"
-          aria-modal="true"
-          aria-label={zoom.alt}
-          onClick={() => setZoom(null)}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={zoom.url} alt={zoom.alt} />
-          <button type="button" className="survey-zoom-close">
-            Close
-          </button>
-        </div>
+        <PhotoLightbox
+          photos={zoom.photos}
+          index={zoom.index}
+          title={zoom.title}
+          onClose={() => setZoom(null)}
+          onMove={(step) =>
+            setZoom((current) => {
+              if (!current) return current
+              const next = current.index + step
+              // Clamped, so an arrow at the end does nothing rather than
+              // looping back to the start.
+              if (next < 0 || next >= current.photos.length) return current
+              return { ...current, index: next }
+            })
+          }
+        />
       )}
     </div>
   )
